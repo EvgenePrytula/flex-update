@@ -1,6 +1,5 @@
 package com.madappgang.flexupdate.core.handlers
 
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.IntentSenderRequest
@@ -11,7 +10,6 @@ import com.google.android.play.core.appupdate.AppUpdateManager
 import com.google.android.play.core.appupdate.AppUpdateOptions
 import com.google.android.play.core.install.model.AppUpdateType.IMMEDIATE
 import com.google.android.play.core.install.model.UpdateAvailability.DEVELOPER_TRIGGERED_UPDATE_IN_PROGRESS
-import com.google.android.play.core.install.model.UpdateAvailability.UPDATE_AVAILABLE
 
 
 /**
@@ -28,30 +26,21 @@ internal class ImmediateUpdateHandler(
         private const val TAG = "ImmediateUpdateHandler"
     }
 
-    init {
-        activity.lifecycle.addObserver(object : DefaultLifecycleObserver {
-            override fun onResume(owner: LifecycleOwner) {
-                super.onResume(owner)
-                appUpdateManager.appUpdateInfo.addOnSuccessListener { info ->
-                    if (info.updateAvailability() == DEVELOPER_TRIGGERED_UPDATE_IN_PROGRESS) {
-                        startImmediateUpdate(info)
-                    }
+
+
+    private val defaultLifecycleObserver = object : DefaultLifecycleObserver {
+        override fun onResume(owner: LifecycleOwner) {
+            super.onResume(owner)
+            appUpdateManager.appUpdateInfo.addOnSuccessListener { info ->
+                if (info.updateAvailability() == DEVELOPER_TRIGGERED_UPDATE_IN_PROGRESS) {
+                    startImmediateUpdate(info)
                 }
             }
-        })
+        }
     }
 
-    override fun checkForUpdate() {
-        appUpdateManager.appUpdateInfo.addOnSuccessListener { info ->
-            val isAvailable = info.updateAvailability() == UPDATE_AVAILABLE
-            val isAllowed = info.isUpdateTypeAllowed(IMMEDIATE)
-
-            if (isAvailable && isAllowed) {
-                startImmediateUpdate(info)
-            }
-        }.addOnFailureListener {
-            Log.e(TAG, "Check failed: $it")
-        }
+    init {
+        activity.lifecycle.addObserver(defaultLifecycleObserver)
     }
 
     private fun startImmediateUpdate(info: AppUpdateInfo) {
@@ -60,6 +49,10 @@ internal class ImmediateUpdateHandler(
             activityResultLauncher,
             AppUpdateOptions.newBuilder(IMMEDIATE).build()
         )
+    }
+
+    override fun startUpdateFlow(info: AppUpdateInfo) {
+        startImmediateUpdate(info)
     }
 }
 

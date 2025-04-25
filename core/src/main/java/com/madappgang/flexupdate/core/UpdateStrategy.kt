@@ -2,7 +2,9 @@ package com.madappgang.flexupdate.core
 
 import com.google.android.gms.tasks.Tasks
 import com.google.android.play.core.appupdate.AppUpdateManager
-import com.madappgang.flexupdate.core.UpdatePriority.MEDIUM
+import com.google.android.play.core.install.model.UpdateAvailability.UPDATE_AVAILABLE
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlin.coroutines.resume
 
 
 /**
@@ -10,26 +12,76 @@ import com.madappgang.flexupdate.core.UpdatePriority.MEDIUM
  */
 
 sealed class UpdateStrategy {
-
     data class Manual(
-        val updatePriority: UpdatePriority = MEDIUM
+        val updatePriority: UpdatePriority
     ) : UpdateStrategy() {
-        override fun resolve(appUpdateManager: AppUpdateManager): Int? {
-            return updatePriority.getUpdateType()
-        }
-    }
+        override suspend fun resolve(appUpdateManager: AppUpdateManager): UpdateInfoResult? {
+            return suspendCancellableCoroutine { continuation ->
+                val updateType = updatePriority.getUpdateType()
 
-    data object Auto : UpdateStrategy() {
-        override fun resolve(appUpdateManager: AppUpdateManager): Int? {
-            return try {
-                val info = Tasks.await(appUpdateManager.appUpdateInfo)
-                val priority = UpdatePriority.fromPriority(info.updatePriority())
-                priority.getUpdateType()
-            } catch (e: Exception) {
-                null
+                if (updateType == null) {
+                    continuation.resume(null)
+                    return@suspendCancellableCoroutine
+                }
+
+                try {
+                    val info = Tasks.await(appUpdateManager.appUpdateInfo)
+
+                    val isUpdateAvailable = info.updateAvailability() == UPDATE_AVAILABLE
+                    val isUpdateTypeAllowed = info.isUpdateTypeAllowed(updateType)
+
+                    if (isUpdateAvailable && isUpdateTypeAllowed) {
+                        continuation.resume(
+                            UpdateInfoResult(
+                                updateType = updateType,
+                                appUpdateInfo = info
+                            )
+                        )
+                    } else {
+                        continuation.resume(null)
+                    }
+
+                } catch (e: Exception) {
+                    continuation.resume(null)
+                }
             }
         }
     }
 
-    abstract fun resolve(appUpdateManager: AppUpdateManager): Int?
+    data object Auto : UpdateStrategy() {
+        override suspend fun resolve(appUpdateManager: AppUpdateManager): UpdateInfoResult? {
+            return suspendCancellableCoroutine { continuation ->
+                try {
+                    val info = Tasks.await(appUpdateManager.appUpdateInfo)
+
+                    val priority = UpdatePriority.fromPriority(info.updatePriority())
+                    val updateType = priority.getUpdateType()
+
+                    if (updateType == null) {
+                        continuation.resume(null)
+                        return@suspendCancellableCoroutine
+                    }
+
+                    val isUpdateAvailable = info.updateAvailability() == UPDATE_AVAILABLE
+                    val isUpdateTypeAllowed = info.isUpdateTypeAllowed(updateType)
+
+                    if (isUpdateAvailable && isUpdateTypeAllowed) {
+                        continuation.resume(
+                            UpdateInfoResult(
+                                updateType = updateType,
+                                appUpdateInfo = info
+                            )
+                        )
+                    } else {
+                        continuation.resume(null)
+                    }
+
+                } catch (e: Exception) {
+                    continuation.resume(null)
+                }
+            }
+        }
+    }
+
+    abstract suspend fun resolve(appUpdateManager: AppUpdateManager): UpdateInfoResult?
 }

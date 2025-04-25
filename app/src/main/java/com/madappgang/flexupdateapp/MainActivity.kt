@@ -1,4 +1,4 @@
-package com.madappgang.flexupdate
+package com.madappgang.flexupdateapp
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -12,7 +12,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.madappgang.flexupdate.core.FlexUpdateManager
-import com.madappgang.flexupdate.ui.theme.FlexUpdateTheme
+import com.madappgang.flexupdateapp.ui.theme.FlexUpdateTheme
 
 
 class MainActivity : ComponentActivity() {

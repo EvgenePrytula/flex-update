@@ -1,6 +1,5 @@
 package com.madappgang.flexupdate.core.handlers
 
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.IntentSenderRequest
@@ -13,7 +12,6 @@ import com.google.android.play.core.install.InstallStateUpdatedListener
 import com.google.android.play.core.install.model.AppUpdateType.FLEXIBLE
 import com.google.android.play.core.install.model.InstallStatus.DOWNLOADED
 import com.google.android.play.core.install.model.UpdateAvailability.DEVELOPER_TRIGGERED_UPDATE_IN_PROGRESS
-import com.google.android.play.core.install.model.UpdateAvailability.UPDATE_AVAILABLE
 
 
 /**
@@ -26,47 +24,32 @@ internal class FlexibleUpdateHandler(
     private val activityResultLauncher: ActivityResultLauncher<IntentSenderRequest>
 ) : UpdateHandler {
 
-    companion object {
-        private const val TAG = "FlexibleUpdateHandler"
-    }
-
     private val listener = InstallStateUpdatedListener { state ->
         if (state.installStatus() == DOWNLOADED) {
             appUpdateManager.completeUpdate()
         }
     }
 
-    init {
-        activity.lifecycle.addObserver(object : DefaultLifecycleObserver {
-            override fun onResume(owner: LifecycleOwner) {
-                super.onResume(owner)
-                appUpdateManager.registerListener(listener)
+    private val defaultLifecycleObserver = object : DefaultLifecycleObserver {
+        override fun onResume(owner: LifecycleOwner) {
+            super.onResume(owner)
+            appUpdateManager.registerListener(listener)
 
-                appUpdateManager.appUpdateInfo.addOnSuccessListener { info ->
-                    if (info.updateAvailability() == DEVELOPER_TRIGGERED_UPDATE_IN_PROGRESS) {
-                        startFlexibleUpdate(info)
-                    }
+            appUpdateManager.appUpdateInfo.addOnSuccessListener { info ->
+                if (info.updateAvailability() == DEVELOPER_TRIGGERED_UPDATE_IN_PROGRESS) {
+                    startFlexibleUpdate(info)
                 }
             }
+        }
 
-            override fun onPause(owner: LifecycleOwner) {
-                super.onPause(owner)
-                appUpdateManager.unregisterListener(listener)
-            }
-        })
+        override fun onPause(owner: LifecycleOwner) {
+            super.onPause(owner)
+            appUpdateManager.unregisterListener(listener)
+        }
     }
 
-    override fun checkForUpdate() {
-        appUpdateManager.appUpdateInfo.addOnSuccessListener { info ->
-            val isAvailable = info.updateAvailability() == UPDATE_AVAILABLE
-            val isAllowed = info.isUpdateTypeAllowed(FLEXIBLE)
-
-            if (isAvailable && isAllowed) {
-                startFlexibleUpdate(info)
-            }
-        }.addOnFailureListener {
-            Log.e(TAG, "Check failed: $it")
-        }
+    init {
+        activity.lifecycle.addObserver(defaultLifecycleObserver)
     }
 
     private fun startFlexibleUpdate(info: AppUpdateInfo) {
@@ -75,6 +58,10 @@ internal class FlexibleUpdateHandler(
             activityResultLauncher,
             AppUpdateOptions.newBuilder(FLEXIBLE).build()
         )
+    }
+
+    override fun startUpdateFlow(info: AppUpdateInfo) {
+        startFlexibleUpdate(info)
     }
 }
 

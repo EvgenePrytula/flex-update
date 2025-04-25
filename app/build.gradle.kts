@@ -5,11 +5,11 @@ plugins {
 }
 
 android {
-    namespace = "com.madappgang.flexupdate"
+    namespace = "com.madappgang.flexupdateapp"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.madappgang.flexupdate"
+        applicationId = "com.madappgang.flexupdateapp"
         minSdk = 24
         targetSdk = 35
         versionCode = 1

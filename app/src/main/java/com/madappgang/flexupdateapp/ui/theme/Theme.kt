@@ -1,4 +1,4 @@
-package com.madappgang.flexupdate.ui.theme
+package com.madappgang.flexupdateapp.ui.theme
 
 import android.app.Activity
 import android.os.Build

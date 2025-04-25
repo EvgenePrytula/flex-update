@@ -1,4 +1,4 @@
-package com.madappgang.flexupdate.ui.theme
+package com.madappgang.flexupdateapp.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
