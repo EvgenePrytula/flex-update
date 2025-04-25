@@ -12,6 +12,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.madappgang.flexupdate.core.FlexUpdateManager
+import com.madappgang.flexupdate.core.UpdatePriority.MEDIUM
+import com.madappgang.flexupdate.core.UpdateStrategy.Manual
 import com.madappgang.flexupdateapp.ui.theme.FlexUpdateTheme
 
 
@@ -19,7 +21,11 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        FlexUpdateManager.from(this).checkForUpdate()
+        val updateStrategy = Manual(MEDIUM)
+        FlexUpdateManager.from(
+            activity = this,
+            updateStrategy = updateStrategy
+        ).checkForUpdate()
 
         enableEdgeToEdge()
         setContent {
