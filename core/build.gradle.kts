@@ -1,10 +1,10 @@
 import com.vanniktech.maven.publish.SonatypeHost
 
 plugins {
-    alias(libs.plugins.android.application)
+    alias(libs.plugins.com.android.library)
     alias(libs.plugins.kotlin.android)
     `maven-publish`
-    id("com.vanniktech.maven.publish") version "0.31.0"
+    alias(libs.plugins.com.vanniktech.maven.publish)
 }
 
 android {
@@ -12,11 +12,7 @@ android {
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.madappgang.flexupdate.core"
         minSdk = 24
-        targetSdk = 35
-        versionCode = 1
-        versionName = "0.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -41,10 +37,11 @@ android {
     buildTypes {
         debug { }
         release { }
+        create("fullRelease")
     }
 
     publishing {
-        singleVariant("release") {
+        singleVariant("fullRelease") {
             withSourcesJar()
         }
     }
@@ -52,13 +49,13 @@ android {
 
 publishing {
     publications {
-        create<MavenPublication>("release") {
+        create<MavenPublication>("fullRelease") {
             groupId = "io.github.evgeneprytula"
             artifactId = "flex-update"
             version = "0.1.2"
 
             afterEvaluate {
-                from(components["release"])
+                from(components["fullRelease"])
             }
 
             pom {
@@ -106,14 +103,13 @@ publishing {
 }
 
 dependencies {
-
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
     testImplementation(libs.junit)
 
-    implementation(libs.google.play.update)
-    implementation(libs.google.play.update.ktx)
+    api(libs.google.play.update)
+    api(libs.google.play.update.ktx)
 
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

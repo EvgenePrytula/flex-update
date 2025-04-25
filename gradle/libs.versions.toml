@@ -1,5 +1,5 @@
 [versions]
-agp = "8.9.1"
+agp = "8.6.0"
 kotlin = "2.0.21"
 coreKtx = "1.16.0"
 junit = "4.13.2"
@@ -29,6 +29,8 @@ androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit
 androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
+org-jetbrains-kotlin-kotlin-gradle-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
+com-android-tools-build-gradle = { module = "com.android.tools.build:gradle", version.ref = "agp" }
 
 # In-app update
 google-play-update = { group = "com.google.android.play", name = "app-update", version.ref = "inAppUpdate" }
@@ -36,6 +38,8 @@ google-play-update_ktx = { group = "com.google.android.play", name = "app-update
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
+com-android-library = { id = "com.android.library", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+com-vanniktech-maven-publish = "com.vanniktech.maven.publish:0.31.0"
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 
