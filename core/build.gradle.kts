@@ -7,8 +7,6 @@ plugins {
     id("com.vanniktech.maven.publish") version "0.31.0"
 }
 
-val libVersion = "0.1.1"
-
 android {
     namespace = "com.madappgang.flexupdate.core"
     compileSdk = 35
@@ -56,7 +54,7 @@ publishing {
         create<MavenPublication>("release") {
             groupId = "io.github.evgeneprytula"
             artifactId = "flex-update"
-            version = libVersion
+            version = "0.1.2"
 
             afterEvaluate {
                 from(components["release"])
