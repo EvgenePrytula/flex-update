@@ -11,7 +11,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import com.jackprytula.flex_update.FlexUpdateManager
+import com.madappgang.flexupdate.core.FlexUpdateManager
 import com.madappgang.flexupdate.ui.theme.FlexUpdateTheme
 
 class MainActivity : ComponentActivity() {

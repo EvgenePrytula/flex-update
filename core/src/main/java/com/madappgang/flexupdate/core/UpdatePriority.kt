@@ -1,8 +1,8 @@
-package com.jackprytula.flex_update
+package com.madappgang.flexupdate.core
 
 import com.google.android.play.core.install.model.AppUpdateType.FLEXIBLE
 import com.google.android.play.core.install.model.AppUpdateType.IMMEDIATE
-import com.jackprytula.flex_update.UpdatePriority.*
+import com.madappgang.flexupdate.core.UpdatePriority.*
 
 
 /**

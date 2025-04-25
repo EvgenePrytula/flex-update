@@ -1,4 +1,4 @@
-package com.jackprytula.flex_update
+package com.madappgang.flexupdate.core
 
 import android.app.Activity.RESULT_OK
 import android.util.Log
@@ -14,7 +14,6 @@ import com.google.android.play.core.install.model.AppUpdateType.IMMEDIATE
 import com.google.android.play.core.install.model.InstallStatus.DOWNLOADED
 import com.google.android.play.core.install.model.UpdateAvailability.DEVELOPER_TRIGGERED_UPDATE_IN_PROGRESS
 import com.google.android.play.core.install.model.UpdateAvailability.UPDATE_AVAILABLE
-import com.jackprytula.flex_update.UpdatePriority.MEDIUM
 
 
 /**
@@ -23,7 +22,7 @@ import com.jackprytula.flex_update.UpdatePriority.MEDIUM
 
 class FlexUpdateManager private constructor(
     activity: ComponentActivity,
-    defaultUpdatePriority: UpdatePriority
+    defaultUpdatePriority: UpdatePriority?
 ) {
 
     companion object {
@@ -31,14 +30,14 @@ class FlexUpdateManager private constructor(
 
         fun from(
             activity: ComponentActivity,
-            priority: UpdatePriority = MEDIUM
+            priority: UpdatePriority? = null
         ): FlexUpdateManager {
             return FlexUpdateManager(activity, priority)
         }
     }
 
     private val appUpdateManager = AppUpdateManagerFactory.create(activity.applicationContext)
-    private var updateType: Int? = defaultUpdatePriority.getUpdateType()
+    private var updateType: Int? = defaultUpdatePriority?.getUpdateType()
 
     private val activityResultLauncher =
         activity.registerForActivityResult(StartIntentSenderForResult()) { result ->
@@ -102,12 +101,9 @@ class FlexUpdateManager private constructor(
         val taskUpdateInfo = appUpdateManager.appUpdateInfo
         taskUpdateInfo.addOnSuccessListener { info ->
 
-            val updatePriority = UpdatePriority.fromPriority(info.updatePriority())
-            updateType = updatePriority.getUpdateType()
-
             if (updateType == null) {
-                Log.d(TAG, "No update required for priority: ${info.updatePriority()}")
-                return@addOnSuccessListener
+                val updatePriority = UpdatePriority.fromPriority(info.updatePriority())
+                updateType = updatePriority.getUpdateType()
             }
 
             updateType?.let { type ->
