@@ -52,7 +52,7 @@ publishing {
         create<MavenPublication>("fullRelease") {
             groupId = "io.github.evgeneprytula"
             artifactId = "flex-update"
-            version = "0.1.2"
+            version = "0.1.3"
 
             afterEvaluate {
                 from(components["fullRelease"])
