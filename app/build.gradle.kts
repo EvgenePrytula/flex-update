@@ -4,6 +4,8 @@ plugins {
     alias(libs.plugins.kotlin.compose)
 }
 
+val appVersion = "0.0.1"
+
 android {
     namespace = "com.madappgang.flexupdateapp"
     compileSdk = 35
@@ -12,8 +14,8 @@ android {
         applicationId = "com.madappgang.flexupdateapp"
         minSdk = 24
         targetSdk = 35
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = generateVersionCode(appVersion)
+        versionName = appVersion
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -59,4 +61,14 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+}
+
+fun generateVersionCode(versionName: String): Int {
+    val parts = versionName.split(".").map { it.toIntOrNull() ?: 0 }
+
+    val major = parts.getOrElse(0) { 0 }
+    val minor = parts.getOrElse(1) { 0 }
+    val patch = parts.getOrElse(2) { 0 }
+
+    return major * 10000 + minor * 100 + patch
 }

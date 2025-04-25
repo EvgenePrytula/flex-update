@@ -113,20 +113,9 @@ dependencies {
     implementation(libs.material)
     testImplementation(libs.junit)
 
-    // In-app update
     implementation(libs.google.play.update)
     implementation(libs.google.play.update.ktx)
 
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
-}
-
-fun generateVersionCode(versionName: String): Int {
-    val parts = versionName.split(".").map { it.toIntOrNull() ?: 0 }
-
-    val major = parts.getOrElse(0) { 0 }
-    val minor = parts.getOrElse(1) { 0 }
-    val patch = parts.getOrElse(2) { 0 }
-
-    return major * 10000 + minor * 100 + patch
 }
