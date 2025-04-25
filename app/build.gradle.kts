@@ -25,6 +25,7 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            signingConfig = signingConfigs.getByName("debug")
         }
     }
     compileOptions {
@@ -34,6 +35,7 @@ android {
     kotlinOptions {
         jvmTarget = "11"
     }
+
     buildFeatures {
         compose = true
     }

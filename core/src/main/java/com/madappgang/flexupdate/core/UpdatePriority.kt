@@ -24,7 +24,7 @@ enum class UpdatePriority(val priority: Int) {
     }
 }
 
-fun UpdatePriority.getUpdateType(): Int? {
+internal fun UpdatePriority.getUpdateType(): Int? {
     return when (this) {
         CRITICAL -> IMMEDIATE
         LOW, MEDIUM, HIGH -> FLEXIBLE
