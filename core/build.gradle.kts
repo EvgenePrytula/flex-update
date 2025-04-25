@@ -1,7 +1,7 @@
 import com.vanniktech.maven.publish.SonatypeHost
 
 plugins {
-    id("com.android.library")
+    alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     `maven-publish`
     id("com.vanniktech.maven.publish") version "0.31.0"
@@ -12,8 +12,11 @@ android {
     compileSdk = 35
 
     defaultConfig {
+        applicationId = "com.madappgang.flexupdate.core"
         minSdk = 24
         targetSdk = 35
+        versionCode = 1
+        versionName = "0.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -41,10 +44,8 @@ android {
     }
 
     publishing {
-        multipleVariants {
+        singleVariant("release") {
             withSourcesJar()
-            withJavadocJar()
-            allVariants()
         }
     }
 }
