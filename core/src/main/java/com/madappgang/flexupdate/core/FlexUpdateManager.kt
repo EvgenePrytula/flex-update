@@ -8,11 +8,12 @@ import androidx.lifecycle.lifecycleScope
 import com.google.android.play.core.appupdate.AppUpdateManagerFactory
 import com.google.android.play.core.install.model.AppUpdateType.FLEXIBLE
 import com.google.android.play.core.install.model.AppUpdateType.IMMEDIATE
-import com.madappgang.flexupdate.core.UpdatePriority.CRITICAL
-import com.madappgang.flexupdate.core.UpdateStrategy.Auto
-import com.madappgang.flexupdate.core.UpdateStrategy.Manual
+import com.madappgang.flexupdate.core.types.UpdatePriority.CRITICAL
+import com.madappgang.flexupdate.core.types.UpdateStrategy.Auto
+import com.madappgang.flexupdate.core.types.UpdateStrategy.Manual
 import com.madappgang.flexupdate.core.handlers.FlexibleUpdateHandler
 import com.madappgang.flexupdate.core.handlers.ImmediateUpdateHandler
+import com.madappgang.flexupdate.core.types.UpdateStrategy
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 

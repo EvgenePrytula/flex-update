@@ -1,4 +1,4 @@
-package com.madappgang.flexupdate.core
+package com.madappgang.flexupdate.core.types
 
 import com.google.android.gms.tasks.Tasks
 import com.google.android.play.core.appupdate.AppUpdateManager

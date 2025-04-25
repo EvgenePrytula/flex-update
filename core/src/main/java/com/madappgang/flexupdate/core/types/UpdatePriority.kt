@@ -1,8 +1,8 @@
-package com.madappgang.flexupdate.core
+package com.madappgang.flexupdate.core.types
 
 import com.google.android.play.core.install.model.AppUpdateType.FLEXIBLE
 import com.google.android.play.core.install.model.AppUpdateType.IMMEDIATE
-import com.madappgang.flexupdate.core.UpdatePriority.*
+import com.madappgang.flexupdate.core.types.UpdatePriority.*
 
 
 /**

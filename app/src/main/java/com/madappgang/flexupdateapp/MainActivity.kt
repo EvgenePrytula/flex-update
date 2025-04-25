@@ -12,8 +12,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.madappgang.flexupdate.core.FlexUpdateManager
-import com.madappgang.flexupdate.core.UpdatePriority.MEDIUM
-import com.madappgang.flexupdate.core.UpdateStrategy.Manual
+import com.madappgang.flexupdate.core.types.UpdatePriority.MEDIUM
+import com.madappgang.flexupdate.core.types.UpdateStrategy.Manual
 import com.madappgang.flexupdateapp.ui.theme.FlexUpdateTheme
 
 
@@ -32,7 +32,7 @@ class MainActivity : ComponentActivity() {
             FlexUpdateTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     Greeting(
-                        name = "Android",
+                        name = "App version",
                         modifier = Modifier.padding(innerPadding)
                     )
                 }
