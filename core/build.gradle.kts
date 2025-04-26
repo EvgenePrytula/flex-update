@@ -37,51 +37,16 @@ android {
     buildTypes {
         debug { }
         release { }
-        create("fullRelease")
-    }
-
-    publishing {
-        singleVariant("fullRelease") {
-            withSourcesJar()
-        }
     }
 }
 
 publishing {
     publications {
-        create<MavenPublication>("fullRelease") {
-            groupId = "io.github.evgeneprytula"
-            artifactId = "flex-update"
-            version = "0.1.3"
-
+        create<MavenPublication>("release") {
             afterEvaluate {
-                from(components["fullRelease"])
-            }
-
-            pom {
-                name.set("FlexUpdate")
-                description.set("A library to manage the In-app update integration in Android")
-                url.set("https://github.com/EvgenePrytula/flex-update")
-
-                licenses {
-                    license {
-                        name.set("Apache License, Version 2.0")
-                        url.set("https://www.apache.org/licenses/LICENSE-2.0")
-                    }
-                }
-
-                developers {
-                    developer {
-                        id.set("eugeneprytula")
-                        name.set("Eugene Prytula")
-                        email.set("ep@madappgang.com")
-                    }
-                }
-
-                scm {
-                    connection.set("scm:git:git://github.com/EvgenePrytula/flex-update")
-                    developerConnection.set("scm:git:ssh://github.com/EvgenePrytula/flex-update")
-                    url.set("http://github.com/EvgenePrytula/flex-update")
+                from(components["release"])
+                tasks.withType<PublishToMavenRepository> {
+                    dependsOn(tasks.withType<Sign>())
                 }
             }
         }
