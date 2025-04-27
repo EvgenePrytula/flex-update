@@ -29,10 +29,6 @@ jobs:
           VERSION_NAME=$RAW_TAG
           echo "VERSION_NAME=$VERSION_NAME" >> $GITHUB_ENV
 
-      - name: Prepare signing secretKeyRingFile
-        run: |
-          echo "${{ secrets.SIGNING_SECRET_KEY_RING_FILE }}" | base64 --decode > /tmp/secring.gpg
-
       - name: Publish to Maven Central
         run: ./gradlew publishAndReleaseToMavenCentral --stacktrace --no-configuration-cache
         env:
