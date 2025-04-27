@@ -20,14 +20,16 @@ import com.madappgang.flexupdateapp.ui.theme.FlexUpdateTheme
 
 
 class MainActivity : ComponentActivity() {
+
+    private val updateManager = FlexUpdateManager.from(
+        activity = this,
+        updateStrategy = Manual(updatePriority = MEDIUM)
+    )
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val updateStrategy = Manual(MEDIUM)
-        FlexUpdateManager.from(
-            activity = this,
-            updateStrategy = updateStrategy
-        ).checkForUpdate()
+        updateManager.checkForUpdate()
 
         enableEdgeToEdge()
         setContent {
