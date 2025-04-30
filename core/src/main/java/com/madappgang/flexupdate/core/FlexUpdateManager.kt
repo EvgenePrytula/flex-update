@@ -4,11 +4,9 @@ import android.app.Activity.RESULT_OK
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.result.contract.ActivityResultContracts.StartIntentSenderForResult
-import com.google.android.play.core.appupdate.testing.FakeAppUpdateManager
-import com.google.android.play.core.install.model.AppUpdateType
+import com.google.android.play.core.appupdate.AppUpdateManagerFactory
 import com.google.android.play.core.install.model.AppUpdateType.FLEXIBLE
 import com.google.android.play.core.install.model.AppUpdateType.IMMEDIATE
-import com.google.android.play.core.install.model.UpdateAvailability
 import com.madappgang.flexupdate.core.handlers.FlexibleUpdateHandler
 import com.madappgang.flexupdate.core.handlers.ImmediateUpdateHandler
 import com.madappgang.flexupdate.core.types.UpdatePriority.CRITICAL
@@ -39,11 +37,7 @@ class FlexUpdateManager private constructor(
         }
     }
 
-    private val appUpdateManager = FakeAppUpdateManager(activity).apply {
-        setUpdateAvailable(UpdateAvailability.UPDATE_AVAILABLE, IMMEDIATE)
-        setUpdatePriority(5)
-        userAcceptsUpdate()
-    }
+    private val appUpdateManager = AppUpdateManagerFactory.create(activity)
 
     private val activityResultLauncher = activity.registerForActivityResult(
         StartIntentSenderForResult()
