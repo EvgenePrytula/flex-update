@@ -26,8 +26,6 @@ internal class ImmediateUpdateHandler(
         private const val TAG = "ImmediateUpdateHandler"
     }
 
-
-
     private val defaultLifecycleObserver = object : DefaultLifecycleObserver {
         override fun onResume(owner: LifecycleOwner) {
             super.onResume(owner)

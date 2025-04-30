@@ -1,5 +1,6 @@
 package com.madappgang.flexupdate.core.types
 
+import android.util.Log
 import com.google.android.gms.tasks.Tasks
 import com.google.android.play.core.appupdate.AppUpdateManager
 import com.google.android.play.core.install.model.UpdateAvailability.UPDATE_AVAILABLE
@@ -28,9 +29,8 @@ sealed class UpdateStrategy {
                     val info = Tasks.await(appUpdateManager.appUpdateInfo)
 
                     val isUpdateAvailable = info.updateAvailability() == UPDATE_AVAILABLE
-                    val isUpdateTypeAllowed = info.isUpdateTypeAllowed(updateType)
 
-                    if (isUpdateAvailable && isUpdateTypeAllowed) {
+                    if (isUpdateAvailable) {
                         continuation.resume(
                             UpdateInfoResult(
                                 updateType = updateType,
@@ -63,9 +63,8 @@ sealed class UpdateStrategy {
                     }
 
                     val isUpdateAvailable = info.updateAvailability() == UPDATE_AVAILABLE
-                    val isUpdateTypeAllowed = info.isUpdateTypeAllowed(updateType)
 
-                    if (isUpdateAvailable && isUpdateTypeAllowed) {
+                    if (isUpdateAvailable) {
                         continuation.resume(
                             UpdateInfoResult(
                                 updateType = updateType,

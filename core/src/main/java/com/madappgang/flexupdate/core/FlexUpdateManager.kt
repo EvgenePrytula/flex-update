@@ -4,18 +4,19 @@ import android.app.Activity.RESULT_OK
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.result.contract.ActivityResultContracts.StartIntentSenderForResult
-import androidx.lifecycle.lifecycleScope
-import com.google.android.play.core.appupdate.AppUpdateManagerFactory
+import com.google.android.play.core.appupdate.testing.FakeAppUpdateManager
+import com.google.android.play.core.install.model.AppUpdateType
 import com.google.android.play.core.install.model.AppUpdateType.FLEXIBLE
 import com.google.android.play.core.install.model.AppUpdateType.IMMEDIATE
-import com.madappgang.flexupdate.core.types.UpdatePriority.CRITICAL
-import com.madappgang.flexupdate.core.types.UpdateStrategy.Auto
-import com.madappgang.flexupdate.core.types.UpdateStrategy.Manual
+import com.google.android.play.core.install.model.UpdateAvailability
 import com.madappgang.flexupdate.core.handlers.FlexibleUpdateHandler
 import com.madappgang.flexupdate.core.handlers.ImmediateUpdateHandler
+import com.madappgang.flexupdate.core.types.UpdatePriority.CRITICAL
 import com.madappgang.flexupdate.core.types.UpdateStrategy
+import com.madappgang.flexupdate.core.types.UpdateStrategy.Auto
+import com.madappgang.flexupdate.core.types.UpdateStrategy.Manual
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 
 /**
@@ -38,7 +39,12 @@ class FlexUpdateManager private constructor(
         }
     }
 
-    private val appUpdateManager = AppUpdateManagerFactory.create(activity)
+    private val appUpdateManager = FakeAppUpdateManager(activity).apply {
+        setUpdateAvailable(UpdateAvailability.UPDATE_AVAILABLE, IMMEDIATE)
+        setUpdatePriority(5)
+        userAcceptsUpdate()
+    }
+
     private val activityResultLauncher = activity.registerForActivityResult(
         StartIntentSenderForResult()
     ) { result ->
@@ -54,30 +60,29 @@ class FlexUpdateManager private constructor(
         }
     }
 
-    fun checkForUpdate() {
-        activity.lifecycleScope.launch(Dispatchers.IO) {
-            try {
-                val updateInfoResult = updateStrategy.resolve(appUpdateManager)
-                val updateHandler = when (val updateType = updateInfoResult?.updateType) {
-                    IMMEDIATE -> ImmediateUpdateHandler(
+    suspend fun checkForUpdate() = withContext(Dispatchers.IO) {
+        runCatching {
+            val updateInfoResult = updateStrategy.resolve(appUpdateManager)
+            val updateHandler = when (val updateType = updateInfoResult?.updateType) {
+                IMMEDIATE -> withContext(Dispatchers.Main) {
+                    ImmediateUpdateHandler(
                         activity,
                         appUpdateManager,
                         activityResultLauncher
                     )
-
-                    FLEXIBLE -> FlexibleUpdateHandler(
-                        activity,
-                        appUpdateManager,
-                        activityResultLauncher
-                    )
-
-                    else -> throw IllegalStateException("Unknown update type: $updateType")
                 }
-                updateHandler.startUpdateFlow(updateInfoResult.appUpdateInfo)
 
-            } catch (e: Exception) {
-                Log.e(TAG, e.printStackTrace().toString())
+                FLEXIBLE -> withContext(Dispatchers.Main) {
+                    FlexibleUpdateHandler(
+                        activity,
+                        appUpdateManager,
+                        activityResultLauncher
+                    )
+                }
+
+                else -> throw IllegalStateException("Unknown update type: $updateType")
             }
+            updateHandler.startUpdateFlow(updateInfoResult.appUpdateInfo)
         }
     }
 }
