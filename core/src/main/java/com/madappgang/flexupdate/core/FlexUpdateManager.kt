@@ -7,8 +7,11 @@ import androidx.activity.result.contract.ActivityResultContracts.StartIntentSend
 import com.google.android.gms.tasks.Tasks
 import com.google.android.play.core.appupdate.AppUpdateManager
 import com.google.android.play.core.appupdate.AppUpdateManagerFactory
+import com.google.android.play.core.appupdate.testing.FakeAppUpdateManager
+import com.google.android.play.core.install.model.AppUpdateType
 import com.google.android.play.core.install.model.AppUpdateType.FLEXIBLE
 import com.google.android.play.core.install.model.AppUpdateType.IMMEDIATE
+import com.google.android.play.core.install.model.UpdateAvailability
 import com.google.android.play.core.install.model.UpdateAvailability.UPDATE_AVAILABLE
 import com.madappgang.flexupdate.core.handlers.FlexibleUpdateHandler
 import com.madappgang.flexupdate.core.handlers.ImmediateUpdateHandler
@@ -31,7 +34,8 @@ import kotlin.coroutines.resume
 
 class FlexUpdateManager private constructor(
     private val activity: ComponentActivity,
-    private val updateStrategy: UpdateStrategy
+    private val updateStrategy: UpdateStrategy,
+    isTesting: Boolean
 ) {
 
     companion object {
@@ -39,13 +43,24 @@ class FlexUpdateManager private constructor(
 
         fun from(
             activity: ComponentActivity,
-            updateStrategy: UpdateStrategy = Auto
+            updateStrategy: UpdateStrategy = Auto,
+            isTesting: Boolean = false
         ): FlexUpdateManager {
-            return FlexUpdateManager(activity, updateStrategy)
+            return FlexUpdateManager(activity, updateStrategy, isTesting)
         }
     }
 
-    private val appUpdateManager = AppUpdateManagerFactory.create(activity)
+    private val appUpdateManager = if (isTesting) {
+        FakeAppUpdateManager(activity).apply {
+            setUpdateAvailable(UPDATE_AVAILABLE, IMMEDIATE)
+            setUpdatePriority(5)
+            userAcceptsUpdate()
+        }
+    } else {
+        AppUpdateManagerFactory.create(activity)
+    }
+
+    private var updateType: Int? = null
 
     private val activityResultLauncher = activity.registerForActivityResult(
         StartIntentSenderForResult()
@@ -54,9 +69,7 @@ class FlexUpdateManager private constructor(
             Log.d(TAG, "Update complete!")
         } else {
             Log.d(TAG, "Update canceled or failed!")
-            val isSkipNotAllowed =
-                updateStrategy is Manual && updateStrategy.updatePriority == CRITICAL
-            if (isSkipNotAllowed) {
+            if (updateType == IMMEDIATE) {
                 activity.finish()
             }
         }
@@ -65,7 +78,8 @@ class FlexUpdateManager private constructor(
     suspend fun checkForUpdate() = withContext(Dispatchers.IO) {
         runCatching {
             val updateInfoResult = appUpdateManager.getUpdateInfoResult(updateStrategy)
-            val updateHandler = when (val updateType = updateInfoResult?.updateType) {
+            updateType = updateInfoResult?.updateType
+            val updateHandler = when (updateType) {
                 IMMEDIATE -> withContext(Dispatchers.Main) {
                     ImmediateUpdateHandler(
                         activity,
@@ -84,7 +98,10 @@ class FlexUpdateManager private constructor(
 
                 else -> throw IllegalStateException("Unknown update type: $updateType")
             }
-            updateHandler.startUpdateFlow(updateInfoResult.appUpdateInfo)
+
+            if (updateInfoResult != null) {
+                updateHandler.startUpdateFlow(updateInfoResult.appUpdateInfo)
+            }
         }
     }
 }
@@ -94,14 +111,11 @@ private suspend fun AppUpdateManager.getUpdateInfoResult(strategy: UpdateStrateg
         try {
             val info = Tasks.await(appUpdateInfo)
 
-            val updateType = when (strategy) {
-                Auto -> {
-                    val priority = UpdatePriority.fromPriority(info.updatePriority())
-                    priority.getUpdateType()
-                }
-
-                is Manual -> strategy.updatePriority.getUpdateType()
+            val updatePriority = when (strategy) {
+                Auto -> UpdatePriority.fromPriority(info.updatePriority())
+                is Manual -> strategy.updatePriority
             }
+            val updateType = updatePriority.getUpdateType()
 
 
             if (updateType == null) {
@@ -110,8 +124,9 @@ private suspend fun AppUpdateManager.getUpdateInfoResult(strategy: UpdateStrateg
             }
 
             val isUpdateAvailable = info.updateAvailability() == UPDATE_AVAILABLE
+            val isUpdateTypeAllowed = info.isUpdateTypeAllowed(updateType)
 
-            if (isUpdateAvailable) {
+            if (isUpdateAvailable && isUpdateTypeAllowed) {
                 continuation.resume(
                     UpdateInfoResult(
                         updateType = updateType,

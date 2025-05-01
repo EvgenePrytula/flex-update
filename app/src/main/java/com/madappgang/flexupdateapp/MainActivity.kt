@@ -27,7 +27,7 @@ class MainActivity : ComponentActivity() {
     private val updateManager by lazy {
         FlexUpdateManager.from(
             activity = this,
-            updateStrategy = Manual(updatePriority = MEDIUM)
+            isTesting = true
         )
     }
 
