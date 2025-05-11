@@ -8,16 +8,13 @@ import com.google.android.gms.tasks.Tasks
 import com.google.android.play.core.appupdate.AppUpdateManager
 import com.google.android.play.core.appupdate.AppUpdateManagerFactory
 import com.google.android.play.core.appupdate.testing.FakeAppUpdateManager
-import com.google.android.play.core.install.model.AppUpdateType
 import com.google.android.play.core.install.model.AppUpdateType.FLEXIBLE
 import com.google.android.play.core.install.model.AppUpdateType.IMMEDIATE
-import com.google.android.play.core.install.model.UpdateAvailability
 import com.google.android.play.core.install.model.UpdateAvailability.UPDATE_AVAILABLE
 import com.madappgang.flexupdate.core.handlers.FlexibleUpdateHandler
 import com.madappgang.flexupdate.core.handlers.ImmediateUpdateHandler
 import com.madappgang.flexupdate.core.types.UpdateInfoResult
 import com.madappgang.flexupdate.core.types.UpdatePriority
-import com.madappgang.flexupdate.core.types.UpdatePriority.CRITICAL
 import com.madappgang.flexupdate.core.types.UpdateStrategy
 import com.madappgang.flexupdate.core.types.UpdateStrategy.Auto
 import com.madappgang.flexupdate.core.types.UpdateStrategy.Manual
