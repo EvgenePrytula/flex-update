@@ -15,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.lifecycle.lifecycleScope
 import com.madappgang.flexupdate.core.FlexUpdateManager
 import com.madappgang.flexupdate.core.types.UpdatePriority.MEDIUM
+import com.madappgang.flexupdate.core.types.UpdateStrategy
 import com.madappgang.flexupdate.core.types.UpdateStrategy.Manual
 import com.madappgang.flexupdateapp.BuildConfig.VERSION_CODE
 import com.madappgang.flexupdateapp.BuildConfig.VERSION_NAME
@@ -25,10 +26,7 @@ import kotlinx.coroutines.launch
 class MainActivity : ComponentActivity() {
 
     private val updateManager by lazy {
-        FlexUpdateManager.from(
-            activity = this,
-            isTesting = true
-        )
+        FlexUpdateManager.from(this,  Manual(MEDIUM))
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
