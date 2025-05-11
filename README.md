@@ -1,11 +1,11 @@
 # FlexUpdate
 
-**FlexUpdate** is a lightweight Android library that intelligently handles in-app updates — either automatically based on the priority number, or manually based on your own custom logic.
-
-It helps your app decide how to handle updates depending on the update priority configured via the Google Play Developer API (typically through CI/CD), or lets you invoke flexible or immediate updates programmatically when needed.
-
 [![Maven Central](https://img.shields.io/maven-central/v/io.github.evgeneprytula/flex-update)](https://search.maven.org/artifact/io.github.evgeneprytula/flex-update)
-![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
+
+**FlexUpdate** is a lightweight Android library that intelligently handles [in-app updates](https://developer.android.com/guide/playcore/in-app-updates) — either automatically based on the priority number, or manually based on your own custom logic.
+
+It helps your app decide how to handle updates depending on the update priority configured via the Google Play Developer API (typically through CI/CD), or lets you invoke [flexible](https://developer.android.com/guide/playcore/in-app-updates#flexible) or [immediate](https://developer.android.com/guide/playcore/in-app-updates#immediate) updates programmatically when needed.
 
 ---
 
@@ -65,3 +65,9 @@ lifecycleScope.launch {
     updateManager.checkForUpdate()
 }
 ```
+
+---
+
+## License
+
+This library is licensed under the [MIT License](./LICENSE).
