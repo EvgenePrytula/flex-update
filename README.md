@@ -1,7 +1,7 @@
 # FlexUpdate
 
 [![Maven Central](https://img.shields.io/maven-central/v/io.github.evgeneprytula/flex-update)](https://search.maven.org/artifact/io.github.evgeneprytula/flex-update)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/EvgenePrytula/flex-update/blob/ep/feature/Add-readme-file-and-instructions-to-instal/LICENCE)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/EvgenePrytula/flex-update/blob/ep/feature/Add-readme-file-and-instructions-to-instal/LICENSE)
 
 **FlexUpdate** is a lightweight Android library that intelligently handles [in-app updates](https://developer.android.com/guide/playcore/in-app-updates) — either automatically based on the priority number, or manually based on your own custom logic.
 
@@ -37,7 +37,7 @@ It helps your app decide how to handle updates depending on the update priority 
 To use **FlexUpdate** in your Android project, add the following dependency to your `build.gradle` file:
 
 ```gradle
-implementation("io.github.evgeneprytula:flex-update:0.3.0")
+implementation("io.github.evgeneprytula:flex-update:x.x.x")
 ```
 
 ---
@@ -70,4 +70,4 @@ lifecycleScope.launch {
 
 ## License
 
-This library is licensed under the [MIT License](https://github.com/EvgenePrytula/flex-update/blob/ep/feature/Add-readme-file-and-instructions-to-instal/LICENCE).
+This library is licensed under the [MIT License](https://github.com/EvgenePrytula/flex-update/blob/ep/feature/Add-readme-file-and-instructions-to-instal/LICENSE).
