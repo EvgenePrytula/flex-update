@@ -1,7 +1,7 @@
 # FlexUpdate
 
 [![Maven Central](https://img.shields.io/maven-central/v/io.github.evgeneprytula/flex-update)](https://search.maven.org/artifact/io.github.evgeneprytula/flex-update)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/EvgenePrytula/flex-update/blob/ep/feature/Add-readme-file-and-instructions-to-instal/LICENCE)
 
 **FlexUpdate** is a lightweight Android library that intelligently handles [in-app updates](https://developer.android.com/guide/playcore/in-app-updates) — either automatically based on the priority number, or manually based on your own custom logic.
 
@@ -70,4 +70,4 @@ lifecycleScope.launch {
 
 ## License
 
-This library is licensed under the [MIT License](./LICENSE).
+This library is licensed under the [MIT License](https://github.com/EvgenePrytula/flex-update/blob/ep/feature/Add-readme-file-and-instructions-to-instal/LICENCE).
