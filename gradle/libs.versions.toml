@@ -11,11 +11,14 @@ composeBom = "2024.09.00"
 appcompat = "1.7.0"
 material = "1.12.0"
 inAppUpdate = "2.1.0"
+integrity = "1.4.0"
 kotlinxCoroutinesPlayServices = "1.9.0"
-
 turbine = "1.2.0"
 robolectric = "4.14.1"
 mockk = "1.13.13"
+basement = "18.5.0"
+tasks = "18.2.0"
+testCore = "1.6.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -36,11 +39,16 @@ androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 org-jetbrains-kotlin-kotlin-gradle-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 com-android-tools-build-gradle = { module = "com.android.tools.build:gradle", version.ref = "agp" }
+google-android-basement = { group = "com.google.android.gms", name = "play-services-basement", version.ref = "basement" }
+google-android-tasks = { group = "com.google.android.gms", name = "play-services-tasks", version.ref = "tasks" }
+androidx-test-core = { group = "androidx.test", name = "core", version.ref = "testCore" }
+
 
 # In-app update
 google-play-update = { group = "com.google.android.play", name = "app-update", version.ref = "inAppUpdate" }
 google-play-update_ktx = { group = "com.google.android.play", name = "app-update-ktx", version.ref = "inAppUpdate" }
 kotlinx-coroutines-play-services = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-play-services", version.ref = "kotlinxCoroutinesPlayServices" }
+google-play-integrity = { group = "com.google.android.play", name = "integrity", version.ref = "integrity" }
 
 # Testing
 kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "kotlinxCoroutinesPlayServices" }
