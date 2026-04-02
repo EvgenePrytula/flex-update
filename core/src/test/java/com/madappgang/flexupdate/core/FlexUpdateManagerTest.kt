@@ -74,7 +74,7 @@ class FlexUpdateManagerTest {
         activityController.setup()
         
         // When
-        manager.checkForUpdate()
+        manager.checkForUpdate { _, _ -> }
         
         // Then
         manager.updateState.test {
@@ -104,7 +104,7 @@ class FlexUpdateManagerTest {
         activityController.setup()
         
         // When
-        manager.checkForUpdate()
+        manager.checkForUpdate { _, _ -> }
         
         // Then
         manager.updateState.test {
@@ -132,7 +132,7 @@ class FlexUpdateManagerTest {
         activityController.setup()
         
         // When
-        manager.checkForUpdate()
+        manager.checkForUpdate { _, _ -> }
         
         // Then
         manager.updateState.test {
@@ -163,7 +163,7 @@ class FlexUpdateManagerTest {
         activityController.setup()
 
         // When
-        manager.checkForUpdate()
+        manager.checkForUpdate { _, _ -> }
 
         // Then
         manager.updateState.test {
@@ -249,7 +249,7 @@ class FlexUpdateManagerTest {
         activityController.setup()
         
         // When
-        manager.checkForUpdate()
+        manager.checkForUpdate { _, _ -> }
         
         // Then
         manager.updateState.test {
@@ -273,7 +273,7 @@ class FlexUpdateManagerTest {
         activityController.setup()
         
         // When
-        manager.checkForUpdate()
+        manager.checkForUpdate { _, _ -> }
         
         // Then
         manager.updateState.test {
@@ -295,7 +295,7 @@ class FlexUpdateManagerTest {
         val manager = FlexUpdateManager.from(activity, Auto, mockAppUpdateManager)
         
         // When
-        activityController.setup() 
+        manager.resumeCheck()
         testDispatcher.scheduler.advanceUntilIdle()
 
         // Then

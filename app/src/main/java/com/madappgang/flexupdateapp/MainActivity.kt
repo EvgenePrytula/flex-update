@@ -13,6 +13,8 @@ import androidx.compose.material3.Text
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.lifecycleScope
+import com.google.android.play.core.appupdate.AppUpdateManagerFactory
+import com.madappgang.flexupdate.core.FlexUpdateDelegate
 import com.madappgang.flexupdate.core.FlexUpdateManager
 import com.madappgang.flexupdate.core.types.UpdatePriority.MEDIUM
 import com.madappgang.flexupdate.core.types.UpdateStrategy.Manual
@@ -23,24 +25,31 @@ import kotlinx.coroutines.launch
 
 
 class MainActivity : ComponentActivity() {
-
+    
     private val updateManager by lazy {
-        FlexUpdateManager.from(
-            activity = this,
+        FlexUpdateManager(
+            appUpdateManager = AppUpdateManagerFactory.create(applicationContext),
             strategy = Manual(MEDIUM)
         )
     }
 
+    private lateinit var updateDelegate: FlexUpdateDelegate
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        
+
+        updateDelegate = FlexUpdateDelegate(this, updateManager, AppUpdateManagerFactory.create(applicationContext))
+        lifecycle.addObserver(updateDelegate)
+
         lifecycleScope.launch {
             updateManager.updateState.collect { state ->
                 Log.d("MainActivity", "Update state: $state")
             }
         }
 
-        updateManager.checkForUpdate()
+        updateManager.checkForUpdate { info, type ->
+            updateDelegate.startUpdate(info, type)
+        }
 
         enableEdgeToEdge()
         setContent {
