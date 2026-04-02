@@ -11,6 +11,11 @@ composeBom = "2024.09.00"
 appcompat = "1.7.0"
 material = "1.12.0"
 inAppUpdate = "2.1.0"
+kotlinxCoroutinesPlayServices = "1.9.0"
+
+turbine = "1.2.0"
+robolectric = "4.14.1"
+mockk = "1.13.13"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -35,6 +40,13 @@ com-android-tools-build-gradle = { module = "com.android.tools.build:gradle", ve
 # In-app update
 google-play-update = { group = "com.google.android.play", name = "app-update", version.ref = "inAppUpdate" }
 google-play-update_ktx = { group = "com.google.android.play", name = "app-update-ktx", version.ref = "inAppUpdate" }
+kotlinx-coroutines-play-services = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-play-services", version.ref = "kotlinxCoroutinesPlayServices" }
+
+# Testing
+kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "kotlinxCoroutinesPlayServices" }
+turbine = { group = "app.cash.turbine", name = "turbine", version.ref = "turbine" }
+robolectric = { group = "org.robolectric", name = "robolectric", version.ref = "robolectric" }
+mockk = { group = "io.mockk", name = "mockk", version.ref = "mockk" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

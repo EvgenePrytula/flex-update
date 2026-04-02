@@ -27,17 +27,20 @@ class MainActivity : ComponentActivity() {
     private val updateManager by lazy {
         FlexUpdateManager.from(
             activity = this,
-            isTesting = true
+            strategy = Manual(MEDIUM)
         )
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        
         lifecycleScope.launch {
-            updateManager.checkForUpdate().onFailure {
-                Log.e("MainActivity", it.toString())
+            updateManager.updateState.collect { state ->
+                Log.d("MainActivity", "Update state: $state")
             }
         }
+
+        updateManager.checkForUpdate()
 
         enableEdgeToEdge()
         setContent {
