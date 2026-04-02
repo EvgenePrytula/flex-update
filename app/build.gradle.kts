@@ -5,6 +5,7 @@ plugins {
 }
 
 val appVersion = "0.0.1"
+val buildNumber = System.getenv("GITHUB_RUN_NUMBER")?.toInt() ?: 1
 
 android {
     namespace = "com.madappgang.flexupdateapp"
@@ -14,8 +15,8 @@ android {
         applicationId = "com.madappgang.flexupdateapp"
         minSdk = 24
         targetSdk = 35
-        versionCode = generateVersionCode(appVersion)
-        versionName = appVersion
+        versionCode = generateVersionCode(appVersion) + buildNumber
+        versionName = "$appVersion.$buildNumber"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
