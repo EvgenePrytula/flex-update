@@ -13,8 +13,6 @@ android {
 
     defaultConfig {
         minSdk = 24
-
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {
@@ -71,29 +69,9 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
-    testImplementation(libs.junit)
-    testImplementation(libs.kotlinx.coroutines.test)
-    testImplementation(libs.google.play.update)
-    testImplementation(libs.google.play.update.ktx)
-    testImplementation(libs.robolectric)
-    testImplementation(libs.turbine)
-    testImplementation(libs.mockk)
-    testImplementation(libs.google.play.integrity)
-    testImplementation(libs.androidx.test.core)
-    testImplementation(libs.google.android.basement)
-    testImplementation(libs.google.android.tasks)
-
+    implementation(libs.androidx.lifecycle.runtime.ktx)
     api(libs.google.play.update)
     api(libs.google.play.update.ktx)
     implementation(libs.kotlinx.coroutines.play.services)
 
-    androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(libs.androidx.espresso.core)
-    androidTestImplementation(libs.google.play.update)
-    androidTestImplementation(libs.google.play.update.ktx)
-    androidTestImplementation(libs.kotlinx.coroutines.test)
-    androidTestImplementation(libs.turbine)
-    androidTestImplementation(libs.google.play.integrity)
-    androidTestImplementation(libs.google.android.basement)
-    androidTestImplementation(libs.google.android.tasks)
 }

@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">core</string>
+    <string name="flex_update_snackbar_message">An update has just been downloaded.</string>
+    <string name="flex_update_snackbar_action">Restart</string>
 </resources>
