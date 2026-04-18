@@ -8,7 +8,6 @@ import org.junit.Assert.assertNull
 import org.junit.Test
 
 class UpdateStrategyTest {
-
     // ── Auto mode ──────────────────────────────────────────────────────────────
 
     @Test
@@ -74,4 +73,7 @@ class UpdateStrategyTest {
     }
 }
 
-private fun UpdateStrategy.resolve(priority: Int, staleness: Int) = resolve(priority, staleness)
+private fun UpdateStrategy.resolve(
+    priority: Int,
+    staleness: Int,
+) = resolve(priority, staleness)

@@ -20,7 +20,6 @@ import org.robolectric.annotation.Config
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [33])
 class InAppUpdateManagerTest {
-
     private lateinit var controller: ActivityController<AppCompatActivity>
     private lateinit var fakeAppUpdateManager: FakeAppUpdateManager
 
@@ -35,10 +34,12 @@ class InAppUpdateManagerTest {
 
     private fun buildManager(config: UpdateConfig = UpdateConfig()): InAppUpdateManager {
         // Manager must be built before start() — registerForActivityResult requires pre-onStart
-        val manager = InAppUpdateManager.Builder(controller.get())
-            .managerProvider(FakeAppUpdateManagerProvider(fakeAppUpdateManager))
-            .config(config)
-            .build()
+        val manager =
+            InAppUpdateManager
+                .Builder(controller.get())
+                .managerProvider(FakeAppUpdateManagerProvider(fakeAppUpdateManager))
+                .config(config)
+                .build()
         controller.start().resume()
         return manager
     }
@@ -50,19 +51,21 @@ class InAppUpdateManagerTest {
     }
 
     @Test
-    fun `startUpdate emits NotAvailable when no update available`() = runTest {
-        val manager = buildManager()
-        manager.startUpdate()
-        shadowOf(Looper.getMainLooper()).idle() // drain Play API tasks queued on the main looper
-        assertEquals(UpdateOutcome.NotAvailable, manager.outcome.first())
-    }
+    fun `startUpdate emits NotAvailable when no update available`() =
+        runTest {
+            val manager = buildManager()
+            manager.startUpdate()
+            shadowOf(Looper.getMainLooper()).idle() // drain Play API tasks queued on the main looper
+            assertEquals(UpdateOutcome.NotAvailable, manager.outcome.first())
+        }
 
     @Test
-    fun `outcome replays last emission to a late subscriber`() = runTest {
-        val manager = buildManager()
-        manager.startUpdate()
-        shadowOf(Looper.getMainLooper()).idle()
-        // Subscribe after the emission — replay = 1 must deliver the value
-        assertEquals(UpdateOutcome.NotAvailable, manager.outcome.first())
-    }
+    fun `outcome replays last emission to a late subscriber`() =
+        runTest {
+            val manager = buildManager()
+            manager.startUpdate()
+            shadowOf(Looper.getMainLooper()).idle()
+            // Subscribe after the emission — replay = 1 must deliver the value
+            assertEquals(UpdateOutcome.NotAvailable, manager.outcome.first())
+        }
 }
