@@ -5,6 +5,10 @@ import android.util.Log
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
+import kotlinx.coroutines.launch
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -45,7 +49,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
 
         updateManager = InAppUpdateManager.Builder(this)
-            .build()  // auto mode: uses Google Play priority with built-in mapping
+            .build()
 
         enableEdgeToEdge()
         setContent {
@@ -59,26 +63,35 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                updateManager.outcome.collect { outcome ->
+                    lastOutcome = outcome
+                    when (outcome) {
+                        is UpdateOutcome.ReadyToInstall ->
+                            UpdateSnackbar.show(this@MainActivity) { updateManager.completeUpdate() }
+
+                        is UpdateOutcome.Declined ->
+                            Log.d("FlexUpdate", "User declined the update")
+
+                        is UpdateOutcome.Failed ->
+                            Log.e(
+                                "FlexUpdate",
+                                "Update failed with error code: ${outcome.errorCode}"
+                            )
+
+                        else -> Unit
+                    }
+                }
+            }
+        }
+
         checkForUpdate()
     }
 
     private fun checkForUpdate() {
         lastOutcome = null
-        updateManager.startUpdate { outcome ->
-            lastOutcome = outcome
-            when (outcome) {
-                is UpdateOutcome.ReadyToInstall ->
-                    UpdateSnackbar.show(this) { updateManager.completeUpdate() }
-
-                is UpdateOutcome.Declined ->
-                    Log.d("FlexUpdate", "User declined the update")
-
-                is UpdateOutcome.Failed ->
-                    Log.e("FlexUpdate", "Update failed with error code: ${outcome.errorCode}")
-
-                else -> Unit
-            }
-        }
+        updateManager.startUpdate()
     }
 }
 
