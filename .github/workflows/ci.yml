@@ -19,5 +19,8 @@ jobs:
           java-version: '17'
           cache: gradle
 
+      - name: Check code style
+        run: ./gradlew ktlintCheck --no-daemon
+
       - name: Build and test
         run: ./gradlew :core:assembleRelease :core:test --no-daemon --stacktrace

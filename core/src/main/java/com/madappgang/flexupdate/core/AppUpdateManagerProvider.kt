@@ -10,12 +10,11 @@ interface AppUpdateManagerProvider {
 }
 
 class DefaultAppUpdateManagerProvider : AppUpdateManagerProvider {
-    override fun provide(context: Context): AppUpdateManager =
-        AppUpdateManagerFactory.create(context)
+    override fun provide(context: Context): AppUpdateManager = AppUpdateManagerFactory.create(context)
 }
 
 class FakeAppUpdateManagerProvider(
-    private val fakeAppUpdateManager: FakeAppUpdateManager
+    private val fakeAppUpdateManager: FakeAppUpdateManager,
 ) : AppUpdateManagerProvider {
     override fun provide(context: Context): AppUpdateManager = fakeAppUpdateManager
 }

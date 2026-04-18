@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.ktlint)
 }
 
 val appVersion = "0.0.1"
@@ -17,7 +18,6 @@ android {
         targetSdk = 35
         versionCode = generateVersionCode(appVersion) + buildNumber
         versionName = "$appVersion.$buildNumber"
-
     }
 
     buildTypes {
@@ -25,7 +25,7 @@ android {
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
+                "proguard-rules.pro",
             )
             signingConfig = signingConfigs.getByName("debug")
         }
@@ -62,10 +62,8 @@ dependencies {
 
 fun generateVersionCode(versionName: String): Int {
     val parts = versionName.split(".").map { it.toIntOrNull() ?: 0 }
-
     val major = parts.getOrElse(0) { 0 }
     val minor = parts.getOrElse(1) { 0 }
     val patch = parts.getOrElse(2) { 0 }
-
     return major * 10000 + minor * 100 + patch
 }

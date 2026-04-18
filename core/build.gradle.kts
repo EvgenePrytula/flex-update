@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.com.android.library)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.com.vanniktech.maven.publish)
+    alias(libs.plugins.ktlint)
 }
 
 android {
@@ -15,11 +16,12 @@ android {
     }
 
     buildTypes {
+        debug { }
         release {
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
+                "proguard-rules.pro",
             )
         }
     }
@@ -29,11 +31,6 @@ android {
     }
     kotlinOptions {
         jvmTarget = "11"
-    }
-
-    buildTypes {
-        debug { }
-        release { }
     }
 }
 
@@ -50,5 +47,4 @@ dependencies {
     api(libs.google.play.update)
     api(libs.google.play.update.ktx)
     implementation(libs.kotlinx.coroutines.play.services)
-
 }
