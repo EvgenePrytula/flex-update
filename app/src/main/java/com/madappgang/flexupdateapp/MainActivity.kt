@@ -33,7 +33,8 @@ import com.madappgang.flexupdate.core.DownloadState
 import com.madappgang.flexupdate.core.InAppUpdateManager
 import com.madappgang.flexupdate.core.UpdateConfig
 import com.madappgang.flexupdate.core.UpdateOutcome
-import com.madappgang.flexupdate.core.ui.UpdateSnackbar
+import com.madappgang.flexupdate.core.UpdatePriority.CRITICAL
+import com.madappgang.flexupdate.core.UpdatePriority.MEDIUM
 import com.madappgang.flexupdateapp.BuildConfig.VERSION_CODE
 import com.madappgang.flexupdateapp.BuildConfig.VERSION_NAME
 import com.madappgang.flexupdateapp.ui.theme.FlexUpdateTheme
@@ -49,8 +50,8 @@ class MainActivity : AppCompatActivity() {
         updateManager = InAppUpdateManager.Builder(this)
             .config(
                 UpdateConfig.Builder()
-                    .immediateMinPriority(4)
-                    .flexibleMinPriority(2)
+                    .immediateMinPriority(CRITICAL)
+                    .flexibleMinPriority(MEDIUM)
                     .stalenessDaysForEscalation(7)
                     .build()
             )

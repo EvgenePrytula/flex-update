@@ -1,16 +1,15 @@
-package com.madappgang.flexupdate.core.ui
+package com.madappgang.flexupdateapp
 
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.snackbar.Snackbar
-import com.madappgang.flexupdate.core.R
 
 object UpdateSnackbar {
     fun show(activity: AppCompatActivity, onRestart: () -> Unit) {
         Snackbar.make(
             activity.findViewById(android.R.id.content),
-            activity.getString(R.string.flex_update_snackbar_message),
+            "An update has just been downloaded.",
             Snackbar.LENGTH_INDEFINITE
-        ).setAction(activity.getString(R.string.flex_update_snackbar_action)) {
+        ).setAction("Restart") {
             onRestart()
         }.show()
     }
