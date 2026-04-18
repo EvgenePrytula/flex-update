@@ -26,8 +26,7 @@ jobs:
         id: version
         run: |
           RAW_TAG=${GITHUB_REF#refs/tags/}
-          VERSION_NAME=$RAW_TAG
-          echo "VERSION_NAME=$VERSION_NAME" >> $GITHUB_ENV
+          echo "ORG_GRADLE_PROJECT_VERSION_NAME=$RAW_TAG" >> $GITHUB_ENV
 
       - name: Publish to Maven Central
         run: ./gradlew publishAndReleaseToMavenCentral --stacktrace --no-configuration-cache
