@@ -3,7 +3,6 @@ import com.vanniktech.maven.publish.SonatypeHost
 plugins {
     alias(libs.plugins.com.android.library)
     alias(libs.plugins.kotlin.android)
-    `maven-publish`
     alias(libs.plugins.com.vanniktech.maven.publish)
 }
 
@@ -38,31 +37,9 @@ android {
     }
 }
 
-publishing {
-    publications {
-        create<MavenPublication>("release") {
-            afterEvaluate {
-                from(components["release"])
-                tasks.withType<PublishToMavenRepository> {
-                    dependsOn(tasks.withType<Sign>())
-                }
-            }
-        }
-    }
-
-    repositories {
-        mavenLocal()
-
-        maven {
-            name = "buildDir"
-            url = uri(rootProject.layout.buildDirectory.dir("maven-repo"))
-        }
-    }
-
-    mavenPublishing {
-        publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL)
-        signAllPublications()
-    }
+mavenPublishing {
+    publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL)
+    signAllPublications()
 }
 
 dependencies {
