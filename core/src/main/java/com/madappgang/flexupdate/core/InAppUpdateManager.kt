@@ -101,11 +101,13 @@ class InAppUpdateManager private constructor(
     private fun resumeIfNeeded() {
         appUpdateManager.appUpdateInfo.addOnSuccessListener { info ->
             when {
-                info.updateAvailability() == UpdateAvailability.DEVELOPER_TRIGGERED_UPDATE_IN_PROGRESS ->
+                info.updateAvailability() == UpdateAvailability.DEVELOPER_TRIGGERED_UPDATE_IN_PROGRESS -> {
                     launchFlow(info, AppUpdateType.IMMEDIATE)
+                }
 
-                info.installStatus() == InstallStatus.DOWNLOADED ->
+                info.installStatus() == InstallStatus.DOWNLOADED -> {
                     onDownloadCompleted()
+                }
             }
         }
     }
@@ -127,17 +129,32 @@ class InAppUpdateManager private constructor(
 
     private fun handleInstallState(state: InstallState) {
         when (state.installStatus()) {
-            InstallStatus.DOWNLOADING -> _downloadState.value = state.toInProgressState()
-            InstallStatus.DOWNLOADED -> onDownloadCompleted()
-            InstallStatus.INSTALLING -> _downloadState.value = Installing
+            InstallStatus.DOWNLOADING -> {
+                _downloadState.value = state.toInProgressState()
+            }
+
+            InstallStatus.DOWNLOADED -> {
+                onDownloadCompleted()
+            }
+
+            InstallStatus.INSTALLING -> {
+                _downloadState.value = Installing
+            }
+
             InstallStatus.FAILED -> {
                 val error = UpdateError.DownloadFailed(state.installErrorCode())
                 _downloadState.value = DownloadState.Failed(error)
                 _outcome.tryEmit(UpdateOutcome.Failed(error))
                 appUpdateManager.unregisterListener(installStateListener)
             }
-            InstallStatus.CANCELED -> appUpdateManager.unregisterListener(installStateListener)
-            else -> Unit
+
+            InstallStatus.CANCELED -> {
+                appUpdateManager.unregisterListener(installStateListener)
+            }
+
+            else -> {
+                Unit
+            }
         }
     }
 
@@ -152,11 +169,21 @@ class InAppUpdateManager private constructor(
 
     private fun handleActivityResult(resultCode: Int) {
         when (resultCode) {
-            Activity.RESULT_OK -> _outcome.tryEmit(UpdateOutcome.Accepted)
-            Activity.RESULT_CANCELED -> _outcome.tryEmit(UpdateOutcome.Declined)
-            ActivityResult.RESULT_IN_APP_UPDATE_FAILED ->
+            Activity.RESULT_OK -> {
+                _outcome.tryEmit(UpdateOutcome.Accepted)
+            }
+
+            Activity.RESULT_CANCELED -> {
+                _outcome.tryEmit(UpdateOutcome.Declined)
+            }
+
+            ActivityResult.RESULT_IN_APP_UPDATE_FAILED -> {
                 _outcome.tryEmit(UpdateOutcome.Failed(UpdateError.InstallFailed))
-            else -> Unit
+            }
+
+            else -> {
+                Unit
+            }
         }
     }
 

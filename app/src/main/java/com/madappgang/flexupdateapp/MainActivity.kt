@@ -68,11 +68,17 @@ class MainActivity : AppCompatActivity() {
                 updateManager.outcome.collect { outcome ->
                     lastOutcome = outcome
                     when (outcome) {
-                        is UpdateOutcome.Declined ->
+                        is UpdateOutcome.Declined -> {
                             Log.d("FlexUpdate", "User declined the update")
-                        is UpdateOutcome.Failed ->
+                        }
+
+                        is UpdateOutcome.Failed -> {
                             Log.e("FlexUpdate", "Update failed: ${outcome.error}")
-                        else -> Unit
+                        }
+
+                        else -> {
+                            Unit
+                        }
                     }
                 }
             }
