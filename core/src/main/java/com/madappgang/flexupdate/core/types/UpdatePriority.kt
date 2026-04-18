@@ -1,4 +1,4 @@
-package com.madappgang.flexupdate.core
+package com.madappgang.flexupdate.core.types
 
 enum class UpdatePriority(internal val level: Int) {
     NONE(0),

@@ -1,4 +1,4 @@
-package com.madappgang.flexupdate.core
+package com.madappgang.flexupdate.core.types
 
 sealed class DownloadState {
     object Idle : DownloadState()

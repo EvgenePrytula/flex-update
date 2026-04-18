@@ -29,12 +29,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.madappgang.flexupdate.core.DownloadState
+import com.madappgang.flexupdate.core.types.DownloadState
 import com.madappgang.flexupdate.core.InAppUpdateManager
-import com.madappgang.flexupdate.core.UpdateConfig
-import com.madappgang.flexupdate.core.UpdateOutcome
-import com.madappgang.flexupdate.core.UpdatePriority.CRITICAL
-import com.madappgang.flexupdate.core.UpdatePriority.MEDIUM
+import com.madappgang.flexupdate.core.types.UpdateOutcome
 import com.madappgang.flexupdateapp.BuildConfig.VERSION_CODE
 import com.madappgang.flexupdateapp.BuildConfig.VERSION_NAME
 import com.madappgang.flexupdateapp.ui.theme.FlexUpdateTheme
@@ -48,14 +45,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
 
         updateManager = InAppUpdateManager.Builder(this)
-            .config(
-                UpdateConfig.Builder()
-                    .immediateMinPriority(CRITICAL)
-                    .flexibleMinPriority(MEDIUM)
-                    .stalenessDaysForEscalation(7)
-                    .build()
-            )
-            .build()
+            .build()  // auto mode: uses Google Play priority with built-in mapping
 
         enableEdgeToEdge()
         setContent {

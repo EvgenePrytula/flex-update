@@ -15,8 +15,10 @@ import com.google.android.play.core.install.model.ActivityResult
 import com.google.android.play.core.install.model.AppUpdateType
 import com.google.android.play.core.install.model.InstallStatus
 import com.google.android.play.core.install.model.UpdateAvailability
-import com.madappgang.flexupdate.core.DownloadState.Idle
-import com.madappgang.flexupdate.core.DownloadState.Installing
+import com.madappgang.flexupdate.core.types.DownloadState
+import com.madappgang.flexupdate.core.types.DownloadState.Idle
+import com.madappgang.flexupdate.core.types.DownloadState.Installing
+import com.madappgang.flexupdate.core.types.UpdateOutcome
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
