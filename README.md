@@ -1,183 +1,79 @@
 # FlexUpdate
 
-A lightweight Android library that wraps the Google Play In-App Updates API and automatically selects between **FLEXIBLE** and **IMMEDIATE** update flows based on update priority and staleness.
+[![Maven Central](https://img.shields.io/maven-central/v/io.github.evgeneprytula/flex-update)](https://central.sonatype.com/artifact/io.github.evgeneprytula/flex-update)
+[![API](https://img.shields.io/badge/API-24%2B-brightgreen.svg)](https://android-arsenal.com/api?level=24)
+[![CI](https://github.com/EvgenePrytula/flex-update/actions/workflows/ci.yml/badge.svg)](https://github.com/EvgenePrytula/flex-update/actions/workflows/ci.yml)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
+
+Kotlin-first in-app update library for Android. Automatically picks between flexible and immediate update flows based on Google Play priority and staleness — no boilerplate, no lifecycle wiring.
 
 ## Installation
 
-```kotlin
-// settings.gradle.kts
-dependencyResolutionManagement {
-    repositories { mavenCentral() }
-}
+Make sure `mavenCentral()` is in your repositories, then add:
 
-// build.gradle.kts (app module)
+```kotlin
 dependencies {
-    implementation("io.github.evgeneprytula:flex-update:0.5.7")
+    implementation("io.github.evgeneprytula:flex-update:<version>")
 }
 ```
 
 ## Quick start
 
-Your activity must extend `AppCompatActivity`. Build the manager once in `onCreate` — it attaches to the lifecycle automatically.
-
 ```kotlin
-class MainActivity : AppCompatActivity() {
+val manager = InAppUpdateManager.Builder(this).build()
 
-    private lateinit var updateManager: InAppUpdateManager
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        updateManager = InAppUpdateManager.Builder(this).build()
-
-        lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.STARTED) {
-                updateManager.outcome.collect { outcome ->
-                    when (outcome) {
-                        is UpdateOutcome.ReadyToInstall -> showInstallPrompt()
-                        is UpdateOutcome.Declined       -> { /* user dismissed */ }
-                        is UpdateOutcome.Failed         -> Log.e("Update", "${outcome.error}")
-                        else -> Unit
-                    }
-                }
-            }
-        }
-
-        updateManager.startUpdate()
-    }
-
-    private fun showInstallPrompt() {
-        // Show a dialog or any UI to let the user restart
-        updateManager.completeUpdate()
-    }
-}
-```
-
-## How the flow is selected
-
-Set the update priority (0–5) in the **Google Play Developer API**. The library maps it to a flow automatically — you never choose FLEXIBLE or IMMEDIATE directly.
-
-**Default behaviour:**
-
-| Priority | Flow | Notes |
-|----------|------|-------|
-| `NONE` (0) | — | No update shown |
-| `LOW` (1) | FLEXIBLE | Background download; user can keep using the app |
-| `MEDIUM` (2) | FLEXIBLE | Background download; user can keep using the app |
-| `HIGH` (3) | FLEXIBLE → IMMEDIATE | Escalated after ≥ 7 days staleness; immediate otherwise flexible |
-| `CRITICAL` (4) or `URGENT` (5) | IMMEDIATE | Play Store overlay blocks the app until updated |
-
-The library picks the flow, registers listeners, observes lifecycle, and cleans up — the only thing you act on is the `UpdateOutcome`.
-
-## Configuration
-
-`UpdateConfig` is a data class — use named parameters and only set what you need.
-
-### Auto mode (default)
-
-```kotlin
-updateManager = InAppUpdateManager.Builder(this).build()
-// equivalent to:
-updateManager = InAppUpdateManager.Builder(this)
-    .config(UpdateConfig())
-    .build()
-```
-
-Tune the staleness escalation threshold:
-
-```kotlin
-updateManager = InAppUpdateManager.Builder(this)
-    .config(UpdateConfig(stalenessDaysForEscalation = 14))
-    .build()
-```
-
-### Manual mode
-
-You set a single `minPriority`. If the Play update's priority is below it, no update is shown. At or above it, an IMMEDIATE update is forced.
-
-```kotlin
-updateManager = InAppUpdateManager.Builder(this)
-    .config(UpdateConfig(mode = UpdateMode.Manual(UpdatePriority.HIGH)))
-    .build()
-```
-
-### Auto-install
-
-When `autoInstall = true`, `completeUpdate()` is called automatically once the download finishes — no `ReadyToInstall` outcome is emitted and no manual action is needed.
-
-```kotlin
-updateManager = InAppUpdateManager.Builder(this)
-    .config(UpdateConfig(autoInstall = true))
-    .build()
-```
-
-When `autoInstall = false` (default), observe `UpdateOutcome.ReadyToInstall` and call `completeUpdate()` yourself to control when the app restarts.
-
-### `UpdatePriority` values
-
-| Enum | Play priority |
-|------|--------------|
-| `NONE` | 0 |
-| `LOW` | 1 |
-| `MEDIUM` | 2 |
-| `HIGH` | 3 |
-| `CRITICAL` | 4 |
-| `URGENT` | 5 |
-
-## Tracking download progress (FLEXIBLE flow)
-
-Observe `downloadState` as a `StateFlow` — useful for showing a progress bar during background downloads.
-
-```kotlin
 lifecycleScope.launch {
     repeatOnLifecycle(Lifecycle.State.STARTED) {
-        updateManager.downloadState.collect { state ->
-            when (state) {
-                is DownloadState.InProgress -> progressBar.progress = state.percent
-                is DownloadState.Completed  -> progressBar.hide()
-                is DownloadState.Failed     -> showError(state.error)
+        manager.outcome.collect { outcome ->
+            when (outcome) {
+                is UpdateOutcome.ReadyToInstall -> manager.completeUpdate()
+                is UpdateOutcome.Declined -> { /* user dismissed */ }
+                is UpdateOutcome.Failed -> Log.e("Update", "${outcome.error}")
                 else -> Unit
             }
         }
     }
 }
+
+manager.startUpdate()
 ```
 
-`DownloadState` values:
+The manager attaches to the activity lifecycle automatically — no `onResume`, `onStop`, or `onDestroy` calls needed.
 
-| State | Meaning |
-|-------|---------|
-| `Idle` | Nothing in progress |
-| `InProgress(percent)` | Download running, 0–100 |
-| `Completed` | File ready, awaiting restart |
-| `Installing` | User confirmed restart |
-| `Failed(error)` | Download or install error |
+## How it works
 
-## UpdateOutcome reference
+Set the update priority (0–5) in the Google Play Developer Console. FlexUpdate reads it and picks the right flow:
 
-| Outcome | When |
-|---------|------|
-| `NotAvailable` | No update in Play Store |
-| `Accepted` | User tapped Update in the dialog |
-| `Declined` | User dismissed the dialog |
-| `ReadyToInstall` | FLEXIBLE download complete — call `completeUpdate()` (only when `autoInstall = false`) |
-| `Failed(error)` | Technical error — see `UpdateError` |
+| Priority | Flow | Behaviour |
+|----------|------|-----------|
+| 0 | — | No update shown |
+| 1–2 | Flexible | Background download, app stays usable |
+| 3 | Flexible → Immediate | Escalates to immediate after staleness threshold |
+| 4–5 | Immediate | Full-screen overlay, update is required |
 
-## UpdateError reference
+Observe `downloadState: StateFlow<DownloadState>` to track download progress and show UI (e.g. a progress bar) during a flexible download.
 
-| Error | When |
-|-------|------|
-| `ApiUnavailable` | Failed to reach the Play Store API |
-| `DownloadFailed(code)` | Install/download error — `code` is the Play Core error code |
-| `InstallFailed` | Activity result indicated an update failure |
+## Configuration
 
-## Lifecycle
+All options are set via `UpdateConfig`:
 
-No manual wiring needed. `InAppUpdateManager` implements `DefaultLifecycleObserver` and handles everything automatically:
+```kotlin
+InAppUpdateManager.Builder(this)
+    .config(
+        UpdateConfig(
+            mode = UpdateMode.Auto,           // default — priority drives the decision
+            stalenessDaysForEscalation = 7,  // days before HIGH priority escalates to immediate
+            autoInstall = false,             // true = install automatically when download finishes
+        )
+    )
+    .build()
+```
 
-- **onResume** — re-launches IMMEDIATE if an update was already in progress; triggers install if a FLEXIBLE download completed while the app was in the background.
-- **onStop** — unregisters the install state listener.
-- **onDestroy** — clears all references to prevent memory leaks.
+**Manual mode** — ignore Play priority and force immediate updates above your own threshold:
+
+```kotlin
+UpdateConfig(mode = UpdateMode.Manual(minPriority = UpdatePriority.HIGH))
+```
 
 ## License
 
