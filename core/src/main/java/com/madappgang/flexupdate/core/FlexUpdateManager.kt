@@ -4,7 +4,7 @@ import android.app.Activity
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.app.AppCompatActivity
+import androidx.activity.ComponentActivity
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import com.google.android.play.core.appupdate.AppUpdateInfo
@@ -30,7 +30,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import java.lang.ref.WeakReference
 
 class FlexUpdateManager private constructor(
-    activity: AppCompatActivity,
+    activity: ComponentActivity,
     private val config: UpdateConfig,
     managerProvider: FlexUpdateProvider,
 ) : DefaultLifecycleObserver {
@@ -176,7 +176,7 @@ class FlexUpdateManager private constructor(
     }
 
     class Builder(
-        private val activity: AppCompatActivity,
+        private val activity: ComponentActivity,
     ) {
         private var config = UpdateConfig()
         private var managerProvider: FlexUpdateProvider = DefaultFlexUpdateProvider()
