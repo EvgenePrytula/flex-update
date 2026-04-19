@@ -16,9 +16,9 @@ import com.google.android.play.core.install.model.ActivityResult
 import com.google.android.play.core.install.model.AppUpdateType
 import com.google.android.play.core.install.model.InstallStatus
 import com.google.android.play.core.install.model.UpdateAvailability
-import com.madappgang.flexupdate.core.types.DownloadState
-import com.madappgang.flexupdate.core.types.DownloadState.Idle
-import com.madappgang.flexupdate.core.types.DownloadState.Installing
+import com.madappgang.flexupdate.core.types.UpdateDownloadState
+import com.madappgang.flexupdate.core.types.UpdateDownloadState.Idle
+import com.madappgang.flexupdate.core.types.UpdateDownloadState.Installing
 import com.madappgang.flexupdate.core.types.UpdateError
 import com.madappgang.flexupdate.core.types.UpdateOutcome
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -29,17 +29,17 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import java.lang.ref.WeakReference
 
-class InAppUpdateManager private constructor(
+class FlexUpdateManager private constructor(
     activity: AppCompatActivity,
     private val config: UpdateConfig,
-    managerProvider: AppUpdateManagerProvider,
+    managerProvider: FlexUpdateProvider,
 ) : DefaultLifecycleObserver {
     companion object {
         fun create(
             activity: AppCompatActivity,
             config: UpdateConfig = UpdateConfig(),
-            managerProvider: AppUpdateManagerProvider = DefaultAppUpdateManagerProvider(),
-        ): InAppUpdateManager = InAppUpdateManager(activity, config, managerProvider)
+            managerProvider: FlexUpdateProvider = DefaultFlexUpdateProvider(),
+        ): FlexUpdateManager = FlexUpdateManager(activity, config, managerProvider)
     }
 
     private val activityRef = WeakReference(activity)
@@ -47,8 +47,8 @@ class InAppUpdateManager private constructor(
 
     private val appUpdateManager: AppUpdateManager = managerProvider.provide(activity)
 
-    private val _downloadState = MutableStateFlow<DownloadState>(Idle)
-    val downloadState: StateFlow<DownloadState> = _downloadState.asStateFlow()
+    private val _downloadState = MutableStateFlow<UpdateDownloadState>(Idle)
+    val downloadState: StateFlow<UpdateDownloadState> = _downloadState.asStateFlow()
 
     private val _outcome = MutableSharedFlow<UpdateOutcome>(replay = 1)
     val outcome: SharedFlow<UpdateOutcome> = _outcome.asSharedFlow()
@@ -143,7 +143,7 @@ class InAppUpdateManager private constructor(
 
             InstallStatus.FAILED -> {
                 val error = UpdateError.DownloadFailed(state.installErrorCode())
-                _downloadState.value = DownloadState.Failed(error)
+                _downloadState.value = UpdateDownloadState.Failed(error)
                 _outcome.tryEmit(UpdateOutcome.Failed(error))
                 appUpdateManager.unregisterListener(installStateListener)
             }
@@ -159,7 +159,7 @@ class InAppUpdateManager private constructor(
     }
 
     private fun onDownloadCompleted() {
-        _downloadState.value = DownloadState.Completed
+        _downloadState.value = UpdateDownloadState.Completed
         if (config.autoInstall) {
             completeUpdate()
         } else {
@@ -191,21 +191,21 @@ class InAppUpdateManager private constructor(
         private val activity: AppCompatActivity,
     ) {
         private var config = UpdateConfig()
-        private var managerProvider: AppUpdateManagerProvider = DefaultAppUpdateManagerProvider()
+        private var managerProvider: FlexUpdateProvider = DefaultFlexUpdateProvider()
 
         fun config(config: UpdateConfig) = apply { this.config = config }
 
-        fun managerProvider(provider: AppUpdateManagerProvider) = apply { managerProvider = provider }
+        fun managerProvider(provider: FlexUpdateProvider) = apply { managerProvider = provider }
 
-        fun build(): InAppUpdateManager = InAppUpdateManager(activity, config, managerProvider)
+        fun build(): FlexUpdateManager = FlexUpdateManager(activity, config, managerProvider)
     }
 }
 
-private fun InstallState.toInProgressState(): DownloadState.InProgress {
+private fun InstallState.toInProgressState(): UpdateDownloadState.InProgress {
     val percent =
         totalBytesToDownload()
             .takeIf { it > 0 }
             ?.let { ((bytesDownloaded() * 100) / it).toInt() }
             ?: 0
-    return DownloadState.InProgress(percent)
+    return UpdateDownloadState.InProgress(percent)
 }

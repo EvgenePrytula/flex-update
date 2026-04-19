@@ -20,7 +20,7 @@ dependencies {
 ## Quick start
 
 ```kotlin
-val manager = InAppUpdateManager.Builder(this).build()
+val manager = FlexUpdateManager.Builder(this).build()
 
 lifecycleScope.launch {
     repeatOnLifecycle(Lifecycle.State.STARTED) {
@@ -53,14 +53,14 @@ Set the update priority (0–5) in the Google Play Developer Console. FlexUpdate
 | CRITICAL | 4 | Immediate | Full-screen overlay, update is required |
 | URGENT | 5 | Immediate | Full-screen overlay, update is required |
 
-Observe `downloadState: StateFlow<DownloadState>` to track download progress and show UI (e.g. a progress bar) during a flexible download.
+Observe `downloadState: StateFlow<UpdateDownloadState>` to track download progress and show UI (e.g. a progress bar) during a flexible download.
 
 ## Configuration
 
 All options are set via `UpdateConfig`:
 
 ```kotlin
-InAppUpdateManager.Builder(this)
+FlexUpdateManager.Builder(this)
     .config(
         UpdateConfig(
             mode = UpdateMode.Auto,           // default — priority drives the decision

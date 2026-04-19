@@ -33,8 +33,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import com.madappgang.flexupdate.core.InAppUpdateManager
-import com.madappgang.flexupdate.core.types.DownloadState
+import com.madappgang.flexupdate.core.FlexUpdateManager
+import com.madappgang.flexupdate.core.types.UpdateDownloadState
 import com.madappgang.flexupdate.core.types.UpdateOutcome
 import com.madappgang.flexupdateapp.BuildConfig.VERSION_CODE
 import com.madappgang.flexupdateapp.BuildConfig.VERSION_NAME
@@ -42,13 +42,13 @@ import com.madappgang.flexupdateapp.ui.theme.FlexUpdateTheme
 import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
-    private lateinit var updateManager: InAppUpdateManager
+    private lateinit var updateManager: FlexUpdateManager
     private var lastOutcome by mutableStateOf<UpdateOutcome?>(null)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        updateManager = InAppUpdateManager.Builder(this).build()
+        updateManager = FlexUpdateManager.Builder(this).build()
 
         enableEdgeToEdge()
         setContent {
@@ -95,7 +95,7 @@ class MainActivity : AppCompatActivity() {
 
 @Composable
 private fun UpdateDemoScreen(
-    updateManager: InAppUpdateManager,
+    updateManager: FlexUpdateManager,
     lastOutcome: UpdateOutcome?,
     onCheckUpdate: () -> Unit,
     onInstallConfirmed: () -> Unit,
@@ -127,7 +127,7 @@ private fun UpdateDemoScreen(
 
             AppVersionCard()
             UpdateOutcomeCard(lastOutcome)
-            DownloadStateCard(downloadState)
+            UpdateDownloadStateCard(downloadState)
 
             Button(
                 onClick = onCheckUpdate,
@@ -215,8 +215,8 @@ private fun UpdateOutcomeCard(outcome: UpdateOutcome?) {
 }
 
 @Composable
-private fun DownloadStateCard(state: DownloadState) {
-    if (state is DownloadState.Idle) return
+private fun UpdateDownloadStateCard(state: UpdateDownloadState) {
+    if (state is UpdateDownloadState.Idle) return
 
     Card(modifier = Modifier.fillMaxWidth()) {
         Column(
@@ -232,21 +232,21 @@ private fun DownloadStateCard(state: DownloadState) {
                 Text(
                     text =
                         when (state) {
-                            is DownloadState.InProgress -> "Downloading…"
-                            is DownloadState.Completed -> "Download complete"
-                            is DownloadState.Installing -> "Installing…"
-                            is DownloadState.Failed -> "Download failed: ${state.error}"
+                            is UpdateDownloadState.InProgress -> "Downloading…"
+                            is UpdateDownloadState.Completed -> "Download complete"
+                            is UpdateDownloadState.Installing -> "Installing…"
+                            is UpdateDownloadState.Failed -> "Download failed: ${state.error}"
                             else -> ""
                         },
                     style = MaterialTheme.typography.bodyLarge,
                     modifier = Modifier.weight(1f),
                 )
-                if (state is DownloadState.Installing) {
+                if (state is UpdateDownloadState.Installing) {
                     CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
                 }
             }
 
-            if (state is DownloadState.InProgress) {
+            if (state is UpdateDownloadState.InProgress) {
                 LinearProgressIndicator(
                     progress = { state.percent / 100f },
                     modifier = Modifier.fillMaxWidth(),

@@ -3,7 +3,7 @@ package com.madappgang.flexupdate.core
 import android.os.Looper
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.play.core.appupdate.testing.FakeAppUpdateManager
-import com.madappgang.flexupdate.core.types.DownloadState
+import com.madappgang.flexupdate.core.types.UpdateDownloadState
 import com.madappgang.flexupdate.core.types.UpdateOutcome
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
@@ -19,7 +19,7 @@ import org.robolectric.annotation.Config
 
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [33])
-class InAppUpdateManagerTest {
+class FlexUpdateManagerTest {
     private lateinit var controller: ActivityController<AppCompatActivity>
     private lateinit var fakeAppUpdateManager: FakeAppUpdateManager
 
@@ -32,12 +32,12 @@ class InAppUpdateManagerTest {
         fakeAppUpdateManager = FakeAppUpdateManager(controller.get())
     }
 
-    private fun buildManager(config: UpdateConfig = UpdateConfig()): InAppUpdateManager {
+    private fun buildManager(config: UpdateConfig = UpdateConfig()): FlexUpdateManager {
         // Manager must be built before start() — registerForActivityResult requires pre-onStart
         val manager =
-            InAppUpdateManager
+            FlexUpdateManager
                 .Builder(controller.get())
-                .managerProvider(FakeAppUpdateManagerProvider(fakeAppUpdateManager))
+                .managerProvider(FakeFlexUpdateProvider(fakeAppUpdateManager))
                 .config(config)
                 .build()
         controller.start().resume()
@@ -47,7 +47,7 @@ class InAppUpdateManagerTest {
     @Test
     fun `initial downloadState is Idle`() {
         val manager = buildManager()
-        assertEquals(DownloadState.Idle, manager.downloadState.value)
+        assertEquals(UpdateDownloadState.Idle, manager.downloadState.value)
     }
 
     @Test
