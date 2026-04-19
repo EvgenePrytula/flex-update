@@ -74,10 +74,13 @@ class FlexUpdateManager private constructor(
     fun startUpdate() {
         appUpdateManager.appUpdateInfo
             .addOnSuccessListener { info ->
+                val priority = info.updatePriority()
+                val stalenessDays = info.clientVersionStalenessDays() ?: 0
+                val isUpdateAvailable = info.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE
+                val resolvedType = strategy.resolve(priority, stalenessDays)
                 val updateType =
-                    strategy
-                        .resolve(info.updatePriority(), info.clientVersionStalenessDays() ?: 0)
-                        ?.takeIf { info.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE }
+                    resolvedType
+                        ?.takeIf { isUpdateAvailable && info.isUpdateTypeAllowed(it) }
                         ?: run {
                             _outcome.tryEmit(UpdateOutcome.NotAvailable)
                             return@addOnSuccessListener
