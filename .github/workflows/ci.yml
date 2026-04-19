@@ -22,6 +22,9 @@ jobs:
       - name: Check code style
         run: ./gradlew ktlintCheck --no-daemon
 
+      - name: Static analysis
+        run: ./gradlew detekt --no-daemon
+
       - name: Build and test
         run: ./gradlew :core:assembleRelease :core:test --no-daemon --stacktrace
 
