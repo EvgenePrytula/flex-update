@@ -1,10 +1,10 @@
 package com.madappgang.flexupdate.core
 
 import android.app.Activity
+import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.activity.ComponentActivity
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import com.google.android.play.core.appupdate.AppUpdateInfo
@@ -146,7 +146,9 @@ class FlexUpdateManager private constructor(
                 appUpdateManager.unregisterListener(installStateListener)
             }
 
-            else -> Unit
+            else -> {
+                Unit
+            }
         }
     }
 

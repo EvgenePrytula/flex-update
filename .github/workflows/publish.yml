@@ -6,7 +6,11 @@ on:
       - 'v[0-9]+.[0-9]+.[0-9]+'
 
 jobs:
+  build-and-test:
+    uses: ./.github/workflows/build-and-test.yml
+
   publish:
+    needs: build-and-test
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -19,9 +23,6 @@ jobs:
           distribution: temurin
           java-version: '17'
           cache: gradle
-
-      - name: Build and test
-        run: ./gradlew :core:assembleRelease :core:test --no-daemon --stacktrace
 
       - name: Publish to Maven Central
         run: >

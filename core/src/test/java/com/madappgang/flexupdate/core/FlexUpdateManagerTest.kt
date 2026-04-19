@@ -58,5 +58,4 @@ class FlexUpdateManagerTest {
             shadowOf(Looper.getMainLooper()).idle() // drain Play API tasks queued on the main looper
             assertEquals(UpdateOutcome.NotAvailable, manager.outcome.first())
         }
-
 }
