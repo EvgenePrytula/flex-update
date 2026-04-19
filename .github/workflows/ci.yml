@@ -7,5 +7,5 @@ on:
     branches: [main]
 
 jobs:
-  build-and-test:
+  verify:
     uses: ./.github/workflows/build-and-test.yml
