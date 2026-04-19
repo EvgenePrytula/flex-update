@@ -34,18 +34,11 @@ class FlexUpdateManager private constructor(
     private val config: UpdateConfig,
     managerProvider: FlexUpdateProvider,
 ) : DefaultLifecycleObserver {
-    companion object {
-        fun create(
-            activity: AppCompatActivity,
-            config: UpdateConfig = UpdateConfig(),
-            managerProvider: FlexUpdateProvider = DefaultFlexUpdateProvider(),
-        ): FlexUpdateManager = FlexUpdateManager(activity, config, managerProvider)
-    }
-
     private val activityRef = WeakReference(activity)
-    private val activity get() = activityRef.get()
+    private val currentActivity get() = activityRef.get()
 
     private val appUpdateManager: AppUpdateManager = managerProvider.provide(activity)
+    private val strategy = UpdateStrategy(config)
 
     private val _downloadState = MutableStateFlow<UpdateDownloadState>(Idle)
     val downloadState: StateFlow<UpdateDownloadState> = _downloadState.asStateFlow()
@@ -82,7 +75,7 @@ class FlexUpdateManager private constructor(
         appUpdateManager.appUpdateInfo
             .addOnSuccessListener { info ->
                 val updateType =
-                    UpdateStrategy(config)
+                    strategy
                         .resolve(info.updatePriority(), info.clientVersionStalenessDays() ?: 0)
                         ?.takeIf { info.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE }
                         ?: run {
@@ -116,7 +109,7 @@ class FlexUpdateManager private constructor(
         info: AppUpdateInfo,
         updateType: Int,
     ) {
-        activity?.takeUnless { it.isFinishing || it.isDestroyed } ?: return
+        currentActivity?.takeUnless { it.isFinishing || it.isDestroyed } ?: return
         if (updateType == AppUpdateType.FLEXIBLE) {
             appUpdateManager.registerListener(installStateListener)
         }
@@ -134,6 +127,7 @@ class FlexUpdateManager private constructor(
             }
 
             InstallStatus.DOWNLOADED -> {
+                appUpdateManager.unregisterListener(installStateListener)
                 onDownloadCompleted()
             }
 
@@ -152,9 +146,7 @@ class FlexUpdateManager private constructor(
                 appUpdateManager.unregisterListener(installStateListener)
             }
 
-            else -> {
-                Unit
-            }
+            else -> Unit
         }
     }
 
@@ -179,10 +171,6 @@ class FlexUpdateManager private constructor(
 
             ActivityResult.RESULT_IN_APP_UPDATE_FAILED -> {
                 _outcome.tryEmit(UpdateOutcome.Failed(UpdateError.InstallFailed))
-            }
-
-            else -> {
-                Unit
             }
         }
     }

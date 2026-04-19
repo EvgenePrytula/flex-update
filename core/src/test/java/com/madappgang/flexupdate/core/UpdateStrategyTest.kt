@@ -55,21 +55,42 @@ class UpdateStrategyTest {
     // ── Manual mode ────────────────────────────────────────────────────────────
 
     @Test
-    fun `manual - priority below minimum returns null`() {
-        val strategy = UpdateStrategy(UpdateConfig(mode = UpdateMode.Manual(UpdatePriority.HIGH)))
-        assertNull(strategy.resolve(UpdatePriority.MEDIUM.level, staleness = 0))
+    fun `manual - NONE minPriority returns null`() {
+        val strategy = UpdateStrategy(UpdateConfig(mode = UpdateMode.Manual(UpdatePriority.NONE)))
+        assertNull(strategy.resolve(UpdatePriority.URGENT.level, staleness = 0))
     }
 
     @Test
-    fun `manual - priority at minimum returns IMMEDIATE`() {
-        val strategy = UpdateStrategy(UpdateConfig(mode = UpdateMode.Manual(UpdatePriority.HIGH)))
-        assertEquals(AppUpdateType.IMMEDIATE, strategy.resolve(UpdatePriority.HIGH.level, staleness = 0))
+    fun `manual - LOW minPriority returns FLEXIBLE`() {
+        val strategy = UpdateStrategy(UpdateConfig(mode = UpdateMode.Manual(UpdatePriority.LOW)))
+        assertEquals(AppUpdateType.FLEXIBLE, strategy.resolve(UpdatePriority.NONE.level, staleness = 0))
     }
 
     @Test
-    fun `manual - priority above minimum returns IMMEDIATE`() {
-        val strategy = UpdateStrategy(UpdateConfig(mode = UpdateMode.Manual(UpdatePriority.HIGH)))
-        assertEquals(AppUpdateType.IMMEDIATE, strategy.resolve(UpdatePriority.URGENT.level, staleness = 0))
+    fun `manual - HIGH minPriority below staleness threshold returns FLEXIBLE`() {
+        val strategy = UpdateStrategy(UpdateConfig(mode = UpdateMode.Manual(UpdatePriority.HIGH), stalenessDaysForEscalation = 7))
+        assertEquals(AppUpdateType.FLEXIBLE, strategy.resolve(UpdatePriority.NONE.level, staleness = 6))
+    }
+
+    @Test
+    fun `manual - HIGH minPriority at staleness threshold returns IMMEDIATE`() {
+        val strategy = UpdateStrategy(UpdateConfig(mode = UpdateMode.Manual(UpdatePriority.HIGH), stalenessDaysForEscalation = 7))
+        assertEquals(AppUpdateType.IMMEDIATE, strategy.resolve(UpdatePriority.NONE.level, staleness = 7))
+    }
+
+    @Test
+    fun `manual - CRITICAL minPriority returns IMMEDIATE regardless of staleness`() {
+        val strategy = UpdateStrategy(UpdateConfig(mode = UpdateMode.Manual(UpdatePriority.CRITICAL)))
+        assertEquals(AppUpdateType.IMMEDIATE, strategy.resolve(UpdatePriority.NONE.level, staleness = 0))
+    }
+
+    @Test
+    fun `manual - store priority is ignored`() {
+        val strategy = UpdateStrategy(UpdateConfig(mode = UpdateMode.Manual(UpdatePriority.LOW)))
+        assertEquals(
+            strategy.resolve(UpdatePriority.NONE.level, staleness = 0),
+            strategy.resolve(UpdatePriority.URGENT.level, staleness = 0),
+        )
     }
 }
 
