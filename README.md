@@ -44,12 +44,14 @@ The manager attaches to the activity lifecycle automatically — no `onResume`, 
 
 Set the update priority (0–5) in the Google Play Developer Console. FlexUpdate reads it and picks the right flow:
 
-| Priority | Flow | Behaviour |
-|----------|------|-----------|
-| 0 | — | No update shown |
-| 1–2 | Flexible | Background download, app stays usable |
-| 3 | Flexible → Immediate | Escalates to immediate after staleness threshold |
-| 4–5 | Immediate | Full-screen overlay, update is required |
+| Priority | Level | Flow | Behaviour |
+|----------|-------|------|-----------|
+| NONE | 0 | — | No update shown |
+| LOW | 1 | Flexible | Background download, app stays usable |
+| MEDIUM | 2 | Flexible | Background download, app stays usable |
+| HIGH | 3 | Flexible → Immediate | Escalates to immediate after staleness threshold |
+| CRITICAL | 4 | Immediate | Full-screen overlay, update is required |
+| URGENT | 5 | Immediate | Full-screen overlay, update is required |
 
 Observe `downloadState: StateFlow<DownloadState>` to track download progress and show UI (e.g. a progress bar) during a flexible download.
 
@@ -69,10 +71,11 @@ InAppUpdateManager.Builder(this)
     .build()
 ```
 
-**Manual mode** — ignore Play priority and force immediate updates above your own threshold:
+**Manual mode** — ignore Play priority and use your own threshold. The same flow logic applies: `CRITICAL`/`URGENT` → immediate, `HIGH` after staleness → immediate, `LOW`/`MEDIUM` → flexible. Default threshold is `HIGH`:
 
 ```kotlin
-UpdateConfig(mode = UpdateMode.Manual(minPriority = UpdatePriority.HIGH))
+UpdateConfig(mode = UpdateMode.Manual())                                    // default: HIGH
+UpdateConfig(mode = UpdateMode.Manual(minPriority = UpdatePriority.CRITICAL)) // immediate only
 ```
 
 ## License
