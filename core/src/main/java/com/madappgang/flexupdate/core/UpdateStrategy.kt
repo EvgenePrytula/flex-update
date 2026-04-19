@@ -3,9 +3,11 @@ package com.madappgang.flexupdate.core
 import com.google.android.play.core.install.model.AppUpdateType
 import com.madappgang.flexupdate.core.types.UpdateMode.Auto
 import com.madappgang.flexupdate.core.types.UpdateMode.Manual
+import com.madappgang.flexupdate.core.types.UpdatePriority
 import com.madappgang.flexupdate.core.types.UpdatePriority.CRITICAL
 import com.madappgang.flexupdate.core.types.UpdatePriority.HIGH
 import com.madappgang.flexupdate.core.types.UpdatePriority.LOW
+import com.madappgang.flexupdate.core.types.UpdatePriority.NONE
 
 class UpdateStrategy(
     private val config: UpdateConfig,
@@ -13,20 +15,23 @@ class UpdateStrategy(
     fun resolve(
         priority: Int,
         stalenessDays: Int,
-    ): Int? =
-        when (val mode = config.mode) {
-            is Auto ->
-                when {
-                    priority >= CRITICAL.level -> AppUpdateType.IMMEDIATE
-                    priority >= HIGH.level && stalenessDays >= config.stalenessDaysForEscalation -> AppUpdateType.IMMEDIATE
-                    priority >= LOW.level -> AppUpdateType.FLEXIBLE
-                    else -> null
-                }
+    ): Int? {
+        val effectivePriority =
+            when (val mode = config.mode) {
+                is Auto -> UpdatePriority.entries.firstOrNull { it.level == priority } ?: NONE
+                is Manual -> mode.minPriority
+            }
+        return resolveUpdateType(effectivePriority, stalenessDays)
+    }
 
-            is Manual ->
-                when {
-                    priority >= mode.minPriority.level -> AppUpdateType.IMMEDIATE
-                    else -> null
-                }
+    private fun resolveUpdateType(
+        priority: UpdatePriority,
+        stalenessDays: Int,
+    ): Int? =
+        when {
+            priority >= CRITICAL -> AppUpdateType.IMMEDIATE
+            priority >= HIGH && stalenessDays >= config.stalenessDaysForEscalation -> AppUpdateType.IMMEDIATE
+            priority >= LOW -> AppUpdateType.FLEXIBLE
+            else -> null
         }
 }

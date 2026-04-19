@@ -4,6 +4,6 @@ sealed class UpdateMode {
     data object Auto : UpdateMode()
 
     data class Manual(
-        val minPriority: UpdatePriority,
+        val minPriority: UpdatePriority = UpdatePriority.HIGH,
     ) : UpdateMode()
 }
