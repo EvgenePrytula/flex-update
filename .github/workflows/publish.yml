@@ -6,11 +6,11 @@ on:
       - 'v[0-9]+.[0-9]+.[0-9]+'
 
 jobs:
-  verify:
-    uses: ./.github/workflows/build-and-test.yml
+  checks:
+    uses: ./.github/workflows/checks.yml
 
   publish:
-    needs: verify
+    needs: checks
     runs-on: ubuntu-latest
     permissions:
       contents: write

@@ -1,10 +1,10 @@
-name: Verify
+name: Checks
 
 on:
   workflow_call:
 
 jobs:
-  verify:
+  checks:
     runs-on: ubuntu-latest
 
     steps:
