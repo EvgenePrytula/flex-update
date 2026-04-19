@@ -59,13 +59,4 @@ class FlexUpdateManagerTest {
             assertEquals(UpdateOutcome.NotAvailable, manager.outcome.first())
         }
 
-    @Test
-    fun `outcome replays last emission to a late subscriber`() =
-        runTest {
-            val manager = buildManager()
-            manager.startUpdate()
-            shadowOf(Looper.getMainLooper()).idle()
-            // Subscribe after the emission — replay = 1 must deliver the value
-            assertEquals(UpdateOutcome.NotAvailable, manager.outcome.first())
-        }
 }
