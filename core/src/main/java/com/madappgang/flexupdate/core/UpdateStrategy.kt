@@ -7,7 +7,6 @@ import com.madappgang.flexupdate.core.types.UpdatePriority
 import com.madappgang.flexupdate.core.types.UpdatePriority.CRITICAL
 import com.madappgang.flexupdate.core.types.UpdatePriority.HIGH
 import com.madappgang.flexupdate.core.types.UpdatePriority.LOW
-import com.madappgang.flexupdate.core.types.UpdatePriority.NONE
 
 class UpdateStrategy(
     private val config: UpdateConfig,
@@ -15,14 +14,13 @@ class UpdateStrategy(
     fun resolve(
         priority: Int,
         stalenessDays: Int,
-    ): Int? {
-        val effectivePriority =
-            when (val mode = config.mode) {
-                is Auto -> UpdatePriority.entries.firstOrNull { it.level == priority } ?: NONE
-                is Manual -> mode.minPriority
-            }
-        return resolveUpdateType(effectivePriority, stalenessDays)
-    }
+    ): Int? = resolveUpdateType(effectivePriorityFor(priority), stalenessDays)
+
+    private fun effectivePriorityFor(playPriority: Int): UpdatePriority =
+        when (val mode = config.mode) {
+            is Auto -> UpdatePriority.fromLevel(playPriority)
+            is Manual -> mode.minPriority
+        }
 
     private fun resolveUpdateType(
         priority: UpdatePriority,

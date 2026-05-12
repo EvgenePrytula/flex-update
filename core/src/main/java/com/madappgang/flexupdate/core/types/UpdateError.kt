@@ -7,5 +7,7 @@ sealed class UpdateError {
         val code: Int,
     ) : UpdateError()
 
-    data object InstallFailed : UpdateError()
+    data class InstallFailed(
+        val code: Int = 0,
+    ) : UpdateError()
 }

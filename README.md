@@ -38,7 +38,7 @@ lifecycleScope.launch {
 manager.startUpdate()
 ```
 
-The manager attaches to the activity lifecycle automatically — no `onResume`, `onStop`, or `onDestroy` calls needed.
+Build the manager from your Activity's `onCreate` — it registers an `ActivityResultLauncher`, which must happen before the Activity reaches `onStart()`. From there, the manager attaches to the lifecycle automatically — no `onResume`, `onStop`, or `onDestroy` calls needed.
 
 ## How it works
 

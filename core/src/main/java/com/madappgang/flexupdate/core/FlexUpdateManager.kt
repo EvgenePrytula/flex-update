@@ -10,6 +10,7 @@ import androidx.lifecycle.LifecycleOwner
 import com.google.android.play.core.appupdate.AppUpdateInfo
 import com.google.android.play.core.appupdate.AppUpdateManager
 import com.google.android.play.core.appupdate.AppUpdateOptions
+import com.google.android.play.core.install.InstallException
 import com.google.android.play.core.install.InstallState
 import com.google.android.play.core.install.InstallStateUpdatedListener
 import com.google.android.play.core.install.model.ActivityResult
@@ -37,7 +38,7 @@ class FlexUpdateManager private constructor(
     private val activityRef = WeakReference(activity)
     private val currentActivity get() = activityRef.get()
 
-    private val appUpdateManager: AppUpdateManager = managerProvider.provide(activity)
+    private val appUpdateManager: AppUpdateManager = managerProvider.provide(activity.applicationContext)
     private val strategy = UpdateStrategy(config)
 
     private val _downloadState = MutableStateFlow<UpdateDownloadState>(Idle)
@@ -45,6 +46,8 @@ class FlexUpdateManager private constructor(
 
     private val _outcome = MutableSharedFlow<UpdateOutcome>(replay = 1)
     val outcome: SharedFlow<UpdateOutcome> = _outcome.asSharedFlow()
+
+    private var listenerRegistered = false
 
     private val launcher: ActivityResultLauncher<IntentSenderRequest> =
         activity.registerForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) { result ->
@@ -63,47 +66,85 @@ class FlexUpdateManager private constructor(
     override fun onResume(owner: LifecycleOwner) = resumeIfNeeded()
 
     override fun onStop(owner: LifecycleOwner) {
-        appUpdateManager.unregisterListener(installStateListener)
+        unregisterInstallStateListener()
     }
 
     override fun onDestroy(owner: LifecycleOwner) {
         activityRef.clear()
-        owner.lifecycle.removeObserver(this)
     }
 
+    @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
     fun startUpdate() {
+        _downloadState.value = Idle
+        _outcome.resetReplayCache()
+
         appUpdateManager.appUpdateInfo
-            .addOnSuccessListener { info ->
-                val priority = info.updatePriority()
-                val stalenessDays = info.clientVersionStalenessDays() ?: 0
-                val isUpdateAvailable = info.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE
-                val resolvedType = strategy.resolve(priority, stalenessDays)
-                val updateType =
-                    resolvedType
-                        ?.takeIf { isUpdateAvailable && info.isUpdateTypeAllowed(it) }
-                        ?: run {
-                            _outcome.tryEmit(UpdateOutcome.NotAvailable)
-                            return@addOnSuccessListener
-                        }
-                launchFlow(info, updateType)
-            }.addOnFailureListener { _outcome.tryEmit(UpdateOutcome.Failed(UpdateError.ApiUnavailable)) }
+            .addOnSuccessListener { info -> handleUpdateInfo(info) }
+            .addOnFailureListener { _outcome.tryEmit(UpdateOutcome.Failed(UpdateError.ApiUnavailable)) }
     }
 
     fun completeUpdate() {
-        appUpdateManager.completeUpdate()
         _downloadState.value = Installing
+        appUpdateManager
+            .completeUpdate()
+            .addOnFailureListener { error ->
+                val code = (error as? InstallException)?.errorCode ?: 0
+                val installError = UpdateError.InstallFailed(code)
+                _downloadState.value = UpdateDownloadState.Failed(installError)
+                _outcome.tryEmit(UpdateOutcome.Failed(installError))
+            }
+    }
+
+    private fun handleUpdateInfo(info: AppUpdateInfo) {
+        val earlyOutcome = info.earlyOutcomeOrNull()
+        if (earlyOutcome != null) {
+            _outcome.tryEmit(earlyOutcome)
+            return
+        }
+        val updateType = info.resolveAllowedUpdateType()
+        if (updateType == null) {
+            _outcome.tryEmit(UpdateOutcome.NotAvailable)
+            return
+        }
+        launchFlow(info, updateType)
+    }
+
+    private fun AppUpdateInfo.earlyOutcomeOrNull(): UpdateOutcome? =
+        when (updateAvailability()) {
+            UpdateAvailability.UPDATE_NOT_AVAILABLE -> UpdateOutcome.NotAvailable
+            UpdateAvailability.UNKNOWN -> UpdateOutcome.Failed(UpdateError.ApiUnavailable)
+            else -> null
+        }
+
+    private fun AppUpdateInfo.resolveAllowedUpdateType(): Int? {
+        val stalenessDays = clientVersionStalenessDays() ?: 0
+        return strategy
+            .resolve(updatePriority(), stalenessDays)
+            ?.takeIf { isUpdateTypeAllowed(it) }
     }
 
     private fun resumeIfNeeded() {
         appUpdateManager.appUpdateInfo.addOnSuccessListener { info ->
-            when {
-                info.updateAvailability() == UpdateAvailability.DEVELOPER_TRIGGERED_UPDATE_IN_PROGRESS -> {
-                    launchFlow(info, AppUpdateType.IMMEDIATE)
+            if (info.updateAvailability() == UpdateAvailability.DEVELOPER_TRIGGERED_UPDATE_IN_PROGRESS) {
+                launchFlow(info, AppUpdateType.IMMEDIATE)
+                return@addOnSuccessListener
+            }
+            when (info.installStatus()) {
+                InstallStatus.DOWNLOADED -> onDownloadCompleted()
+
+                InstallStatus.PENDING -> registerInstallStateListener()
+
+                InstallStatus.DOWNLOADING -> {
+                    _downloadState.value = info.toInProgressState()
+                    registerInstallStateListener()
                 }
 
-                info.installStatus() == InstallStatus.DOWNLOADED -> {
-                    onDownloadCompleted()
+                InstallStatus.INSTALLING -> {
+                    _downloadState.value = Installing
+                    registerInstallStateListener()
                 }
+
+                else -> Unit
             }
         }
     }
@@ -114,7 +155,7 @@ class FlexUpdateManager private constructor(
     ) {
         currentActivity?.takeUnless { it.isFinishing || it.isDestroyed } ?: return
         if (updateType == AppUpdateType.FLEXIBLE) {
-            appUpdateManager.registerListener(installStateListener)
+            registerInstallStateListener()
         }
         appUpdateManager.startUpdateFlowForResult(
             info,
@@ -130,7 +171,7 @@ class FlexUpdateManager private constructor(
             }
 
             InstallStatus.DOWNLOADED -> {
-                appUpdateManager.unregisterListener(installStateListener)
+                unregisterInstallStateListener()
                 onDownloadCompleted()
             }
 
@@ -142,11 +183,11 @@ class FlexUpdateManager private constructor(
                 val error = UpdateError.DownloadFailed(state.installErrorCode())
                 _downloadState.value = UpdateDownloadState.Failed(error)
                 _outcome.tryEmit(UpdateOutcome.Failed(error))
-                appUpdateManager.unregisterListener(installStateListener)
+                unregisterInstallStateListener()
             }
 
             InstallStatus.CANCELED -> {
-                appUpdateManager.unregisterListener(installStateListener)
+                unregisterInstallStateListener()
             }
 
             else -> {
@@ -166,18 +207,24 @@ class FlexUpdateManager private constructor(
 
     private fun handleActivityResult(resultCode: Int) {
         when (resultCode) {
-            Activity.RESULT_OK -> {
-                _outcome.tryEmit(UpdateOutcome.Accepted)
-            }
-
-            Activity.RESULT_CANCELED -> {
-                _outcome.tryEmit(UpdateOutcome.Declined)
-            }
-
-            ActivityResult.RESULT_IN_APP_UPDATE_FAILED -> {
-                _outcome.tryEmit(UpdateOutcome.Failed(UpdateError.InstallFailed))
-            }
+            Activity.RESULT_OK -> _outcome.tryEmit(UpdateOutcome.Accepted)
+            Activity.RESULT_CANCELED -> _outcome.tryEmit(UpdateOutcome.Declined)
+            ActivityResult.RESULT_IN_APP_UPDATE_FAILED ->
+                _outcome.tryEmit(UpdateOutcome.Failed(UpdateError.InstallFailed()))
+            else -> _outcome.tryEmit(UpdateOutcome.Failed(UpdateError.InstallFailed(resultCode)))
         }
+    }
+
+    private fun registerInstallStateListener() {
+        if (listenerRegistered) return
+        appUpdateManager.registerListener(installStateListener)
+        listenerRegistered = true
+    }
+
+    private fun unregisterInstallStateListener() {
+        if (!listenerRegistered) return
+        appUpdateManager.unregisterListener(installStateListener)
+        listenerRegistered = false
     }
 
     class Builder(
@@ -194,11 +241,14 @@ class FlexUpdateManager private constructor(
     }
 }
 
-private fun InstallState.toInProgressState(): UpdateDownloadState.InProgress {
-    val percent =
-        totalBytesToDownload()
-            .takeIf { it > 0 }
-            ?.let { ((bytesDownloaded() * 100) / it).toInt() }
-            ?: 0
+private fun InstallState.toInProgressState(): UpdateDownloadState.InProgress = progressOf(bytesDownloaded(), totalBytesToDownload())
+
+private fun AppUpdateInfo.toInProgressState(): UpdateDownloadState.InProgress = progressOf(bytesDownloaded(), totalBytesToDownload())
+
+private fun progressOf(
+    downloaded: Long,
+    total: Long,
+): UpdateDownloadState.InProgress {
+    val percent = if (total > 0) ((downloaded * 100) / total).toInt() else 0
     return UpdateDownloadState.InProgress(percent)
 }

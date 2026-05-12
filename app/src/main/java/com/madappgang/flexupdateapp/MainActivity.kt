@@ -41,6 +41,8 @@ import com.madappgang.flexupdateapp.BuildConfig.VERSION_NAME
 import com.madappgang.flexupdateapp.ui.theme.FlexUpdateTheme
 import kotlinx.coroutines.launch
 
+private const val LOG_TAG = "FlexUpdate"
+
 class MainActivity : AppCompatActivity() {
     private lateinit var updateManager: FlexUpdateManager
     private var lastOutcome by mutableStateOf<UpdateOutcome?>(null)
@@ -67,19 +69,7 @@ class MainActivity : AppCompatActivity() {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 updateManager.outcome.collect { outcome ->
                     lastOutcome = outcome
-                    when (outcome) {
-                        is UpdateOutcome.Declined -> {
-                            Log.d("FlexUpdate", "User declined the update")
-                        }
-
-                        is UpdateOutcome.Failed -> {
-                            Log.e("FlexUpdate", "Update failed: ${outcome.error}")
-                        }
-
-                        else -> {
-                            Unit
-                        }
-                    }
+                    logOutcome(outcome)
                 }
             }
         }
@@ -90,6 +80,14 @@ class MainActivity : AppCompatActivity() {
     private fun checkForUpdate() {
         lastOutcome = null
         updateManager.startUpdate()
+    }
+
+    private fun logOutcome(outcome: UpdateOutcome) {
+        when (outcome) {
+            is UpdateOutcome.Declined -> Log.d(LOG_TAG, "User declined the update")
+            is UpdateOutcome.Failed -> Log.e(LOG_TAG, "Update failed: ${outcome.error}")
+            else -> Unit
+        }
     }
 }
 

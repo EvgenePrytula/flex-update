@@ -9,4 +9,9 @@ enum class UpdatePriority(
     HIGH(3),
     CRITICAL(4),
     URGENT(5),
+    ;
+
+    companion object {
+        fun fromLevel(level: Int): UpdatePriority = entries.firstOrNull { it.level == level } ?: NONE
+    }
 }

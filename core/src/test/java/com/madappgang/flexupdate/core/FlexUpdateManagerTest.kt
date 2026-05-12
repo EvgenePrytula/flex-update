@@ -3,8 +3,10 @@ package com.madappgang.flexupdate.core
 import android.os.Looper
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.play.core.appupdate.testing.FakeAppUpdateManager
+import com.google.android.play.core.install.model.AppUpdateType
 import com.madappgang.flexupdate.core.types.UpdateDownloadState
 import com.madappgang.flexupdate.core.types.UpdateOutcome
+import com.madappgang.flexupdate.core.types.UpdatePriority
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
@@ -58,4 +60,22 @@ class FlexUpdateManagerTest {
             shadowOf(Looper.getMainLooper()).idle() // drain Play API tasks queued on the main looper
             assertEquals(UpdateOutcome.NotAvailable, manager.outcome.first())
         }
+
+    @Test
+    fun `startUpdate resets downloadState to Idle after a prior completed download`() {
+        val manager = buildManager()
+        fakeAppUpdateManager.setUpdateAvailable(2, AppUpdateType.FLEXIBLE)
+        fakeAppUpdateManager.setUpdatePriority(UpdatePriority.MEDIUM.level)
+        manager.startUpdate()
+        shadowOf(Looper.getMainLooper()).idle()
+        fakeAppUpdateManager.userAcceptsUpdate()
+        fakeAppUpdateManager.downloadStarts()
+        fakeAppUpdateManager.downloadCompletes()
+        shadowOf(Looper.getMainLooper()).idle()
+        assertEquals(UpdateDownloadState.Completed, manager.downloadState.value)
+
+        manager.startUpdate()
+        // Reset happens synchronously, before the Play API task resolves.
+        assertEquals(UpdateDownloadState.Idle, manager.downloadState.value)
+    }
 }
