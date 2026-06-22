@@ -49,6 +49,8 @@ class FlexUpdateManager private constructor(
 
     private var listenerRegistered = false
 
+    private var lastLaunchedUpdateType: Int? = null
+
     private val launcher: ActivityResultLauncher<IntentSenderRequest> =
         activity.registerForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) { result ->
             handleActivityResult(result.resultCode)
@@ -157,6 +159,7 @@ class FlexUpdateManager private constructor(
         if (updateType == AppUpdateType.FLEXIBLE) {
             registerInstallStateListener()
         }
+        lastLaunchedUpdateType = updateType
         appUpdateManager.startUpdateFlowForResult(
             info,
             launcher,
@@ -206,13 +209,7 @@ class FlexUpdateManager private constructor(
     }
 
     private fun handleActivityResult(resultCode: Int) {
-        when (resultCode) {
-            Activity.RESULT_OK -> _outcome.tryEmit(UpdateOutcome.Accepted)
-            Activity.RESULT_CANCELED -> _outcome.tryEmit(UpdateOutcome.Declined)
-            ActivityResult.RESULT_IN_APP_UPDATE_FAILED ->
-                _outcome.tryEmit(UpdateOutcome.Failed(UpdateError.InstallFailed()))
-            else -> _outcome.tryEmit(UpdateOutcome.Failed(UpdateError.InstallFailed(resultCode)))
-        }
+        _outcome.tryEmit(resultToOutcome(resultCode, lastLaunchedUpdateType))
     }
 
     private fun registerInstallStateListener() {
@@ -240,6 +237,17 @@ class FlexUpdateManager private constructor(
         fun build(): FlexUpdateManager = FlexUpdateManager(activity, config, managerProvider)
     }
 }
+
+internal fun resultToOutcome(
+    resultCode: Int,
+    launchedUpdateType: Int?,
+): UpdateOutcome =
+    when (resultCode) {
+        Activity.RESULT_OK -> UpdateOutcome.Accepted
+        Activity.RESULT_CANCELED -> UpdateOutcome.Declined(mandatory = launchedUpdateType == AppUpdateType.IMMEDIATE)
+        ActivityResult.RESULT_IN_APP_UPDATE_FAILED -> UpdateOutcome.Failed(UpdateError.InstallFailed())
+        else -> UpdateOutcome.Failed(UpdateError.InstallFailed(resultCode))
+    }
 
 private fun InstallState.toInProgressState(): UpdateDownloadState.InProgress = progressOf(bytesDownloaded(), totalBytesToDownload())
 

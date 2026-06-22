@@ -5,7 +5,9 @@ sealed class UpdateOutcome {
 
     data object Accepted : UpdateOutcome()
 
-    data object Declined : UpdateOutcome()
+    data class Declined(
+        val mandatory: Boolean,
+    ) : UpdateOutcome()
 
     data object ReadyToInstall : UpdateOutcome()
 

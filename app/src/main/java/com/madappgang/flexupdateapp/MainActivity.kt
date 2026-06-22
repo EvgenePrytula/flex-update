@@ -70,6 +70,9 @@ class MainActivity : AppCompatActivity() {
                 updateManager.outcome.collect { outcome ->
                     lastOutcome = outcome
                     logOutcome(outcome)
+                    if (outcome is UpdateOutcome.Declined && outcome.mandatory) {
+                        blockAppForRefusedUpdate()
+                    }
                 }
             }
         }
@@ -88,6 +91,10 @@ class MainActivity : AppCompatActivity() {
             is UpdateOutcome.Failed -> Log.e(LOG_TAG, "Update failed: ${outcome.error}")
             else -> Unit
         }
+    }
+
+    private fun blockAppForRefusedUpdate() {
+        finishAndRemoveTask()
     }
 }
 
